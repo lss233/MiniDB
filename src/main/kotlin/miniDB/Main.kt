@@ -1,3 +1,7 @@
+package miniDB
+
+import miniDB.parser.recognizer.sql.SQLFunctionManager
+
 fun main(args: Array<String>) {
     println("Hello World!")
 
