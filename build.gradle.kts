@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+//    kotlin("jvm") version "1.7.20"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
     application
 }
 
@@ -9,10 +10,12 @@ group = "com.lss233"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    maven (url = "https://lss233.littleservice.cn/repositories/minecraft")
     mavenCentral()
 }
 
 dependencies {
+    implementation("io.netty:netty-all:4.1.82.Final")
     testImplementation(kotlin("test"))
 }
 
