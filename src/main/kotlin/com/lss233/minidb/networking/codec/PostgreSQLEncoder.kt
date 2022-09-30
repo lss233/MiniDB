@@ -10,14 +10,18 @@ import io.netty.handler.codec.MessageToByteEncoder
 
 class PostgreSQLEncoder(private val session: Session) : MessageToByteEncoder<OutgoingPacket>() {
     override fun encode(ctx: ChannelHandlerContext?, msg: OutgoingPacket?, out: ByteBuf?) {
-        println("<- " + msg?.javaClass?.simpleName)
         val mType = msg?.javaClass?.simpleName?.let { MessageType.valueOf(it) }
 
-        val buf = Unpooled.buffer(1)
+        val buf = Unpooled.buffer()
         msg?.write(buf)
+
+        val type = mType?.type?.toInt() ?: 'E'.code
+        val len = buf.writerIndex() + 4
+        println("<- ${msg?.javaClass?.simpleName}(${type.toChar()}) len $len")
+
 //        val bytes = buf.array()
-        out?.writeByte(mType?.type?.toInt() ?: 0)
-        out?.writeInt(buf.writerIndex() + 4)
+        out?.writeByte(type)
+        out?.writeInt(len)
 //        out?.writeInt(bytes.size)
         out?.writeBytes(buf, buf.writerIndex())
     }

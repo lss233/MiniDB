@@ -7,7 +7,7 @@ class ErrorResponse: PostgresSQLPacket, OutgoingPacket {
     var type: Int = 'C'.code
     var message: String = ""
     override fun write(buf: ByteBuf): OutgoingPacket {
-        buf.writeInt(type)
+        buf.writeByte(type)
         buf.writeCharSequence(message, StandardCharsets.UTF_8)
         return this
     }

@@ -39,7 +39,8 @@ enum class MessageType(type: Byte) {
     UnknownPacket(0xFF.toByte()),
 
     Query('Q'.code.toByte()),
-    EmptyQueryResponse('I'.code.toByte())
+    EmptyQueryResponse('I'.code.toByte()),
+    Terminate('X'.code.toByte())
     ;
 
     var type: Byte

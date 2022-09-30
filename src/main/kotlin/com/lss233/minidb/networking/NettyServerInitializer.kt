@@ -2,6 +2,7 @@ package com.lss233.minidb.networking
 
 import com.lss233.minidb.networking.codec.PostgreSQLDecoder
 import com.lss233.minidb.networking.codec.PostgreSQLEncoder
+import com.lss233.minidb.networking.handler.TerminateHandler
 import com.lss233.minidb.networking.handler.query.QueryHandler
 import com.lss233.minidb.networking.handler.startup.SSLRequestRejectHandler
 import com.lss233.minidb.networking.handler.startup.StartupMessageHandler
@@ -17,5 +18,6 @@ class NettyServerInitializer() : ChannelInitializer<SocketChannel>() {
         pipeline.addLast(PostgreSQLDecoder(session), PostgreSQLEncoder(session))
         pipeline.addLast(SSLRequestRejectHandler(session), StartupMessageHandler(session))
         pipeline.addLast(QueryHandler(session))
+        pipeline.addLast(TerminateHandler(session))
     }
 }

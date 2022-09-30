@@ -29,13 +29,12 @@ class PostgreSQLDecoder(private val session: Session) : ByteToMessageDecoder() {
 
             val len = `in`.readInt()
             val length = len - `in`.readerIndex()
-            println("-> type ${mType.name}(${mType.type}) len $len")
+            println("-> type ${mType.name}(${mType.type.toInt().toChar()}) len $len")
             if (`in`.readableBytes() < length) {
                 return
             }
 
-            val payload = `in`.readSlice(length);
-            val packet: IncomingPacket? = parse(mType, payload);
+            val packet: IncomingPacket? = parse(mType, `in`);
             packet?.let { out.add(it) }
             `in`.readerIndex(`in`.writerIndex())
         }
@@ -47,6 +46,7 @@ class PostgreSQLDecoder(private val session: Session) : ByteToMessageDecoder() {
                     MessageType.SSLRequest -> SSLRequest().parse(payload)
                     MessageType.StartupMessage -> StartupMessage().parse(payload)
                     MessageType.Query -> Query().parse(payload)
+                    MessageType.Terminate -> Terminate().parse(payload)
                     else -> null
                 }
             }
