@@ -4,9 +4,9 @@ import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.*
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import miniDB.parser.ast.expression.primary.SysVarPrimary
 import miniDB.parser.ast.stmt.dal.DALSetStatement
-import miniDB.parser.ast.stmt.ddl.DDLStatement
-import miniDB.parser.ast.stmt.dml.DMLStatement
+import miniDB.parser.ast.stmt.dml.DMLSelectStatement
 import miniDB.parser.recognizer.SQLParserDelegate
 import java.sql.SQLSyntaxErrorException
 
@@ -19,9 +19,9 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                 queryString = queryString.replace(REGEX_STMT_SET, "SET $1=$2")
             }
             val ast = SQLParserDelegate.parse(queryString)
-            println("  Q(${ast.javaClass.name}: $queryString")
+            println("  Q(${ast.javaClass.simpleName}: $queryString")
             when(ast) {
-                is DMLStatement -> {
+                is DMLSelectStatement -> {
                     ctx?.writeAndFlush(RowDescription())?.sync()
                     ctx?.writeAndFlush(CommandComplete("SELECT 0"))?.sync()
                 }
@@ -29,7 +29,7 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                     for (pair in ast.assignmentList) {
                         ctx?.writeAndFlush(CommandComplete("SET"))?.sync()
                         ctx?.writeAndFlush(ParameterStatus(
-                            pair.key.evaluation(emptyMap()).toString(),
+                            (pair.key as SysVarPrimary).varText,
                             pair.value.evaluation(emptyMap()).toString()
                         ))?.sync()
                     }
