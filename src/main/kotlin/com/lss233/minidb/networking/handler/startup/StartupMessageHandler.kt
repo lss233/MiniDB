@@ -8,8 +8,7 @@ import java.util.*
 
 class StartupMessageHandler(private val session: Session) : SimpleChannelInboundHandler<StartupMessage>() {
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: StartupMessage?) {
-//        ctx.writeAnd
-        session.state = Session.State.Authenticating
+//        session.state = Session.State.Authenticating
 //        ctx?.writeAndFlush(AuthenticationSASL(listOf("SCRAM-SHA256")))?.sync()
         ctx?.writeAndFlush(AuthenticationOk())?.sync()
         ctx?.writeAndFlush(ParameterStatus("client_encoding", "UTF8"))?.sync()
@@ -17,6 +16,7 @@ class StartupMessageHandler(private val session: Session) : SimpleChannelInbound
         ctx?.writeAndFlush(ParameterStatus("TimeZone", "Asia/Shanghai"))?.sync()
         ctx?.writeAndFlush(ParameterStatus("server_encoding", "UTF8"))?.sync()
         ctx?.writeAndFlush(ParameterStatus("server_version", "14.5"))?.sync()
+        session.state = Session.State.Query
         ctx?.writeAndFlush(ReadyForQuery())?.sync()
     }
 

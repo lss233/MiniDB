@@ -3,6 +3,7 @@ package com.lss233.minidb.networking.handler.startup
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.SSLRequest
 import io.netty.buffer.Unpooled
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import java.nio.charset.StandardCharsets
