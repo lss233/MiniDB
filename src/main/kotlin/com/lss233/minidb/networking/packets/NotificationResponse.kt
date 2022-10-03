@@ -3,7 +3,7 @@ package com.lss233.minidb.networking.packets
 import io.netty.buffer.ByteBuf
 import java.nio.charset.StandardCharsets
 
-class NotificationResponse: PostgresSQLPacket, IncomingPacket {
+class NotificationResponse: IncomingPacket {
     var processId: Int? = null;
     var channel: String? = null;
     var payload: String? = null;

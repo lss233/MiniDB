@@ -40,7 +40,8 @@ enum class MessageType(type: Byte) {
 
     Query('Q'.code.toByte()),
     EmptyQueryResponse('I'.code.toByte()),
-    Terminate('X'.code.toByte())
+
+    Terminate('X'.code.toByte()),
     ;
 
     var type: Byte

@@ -3,7 +3,7 @@ package com.lss233.minidb.networking.packets
 import io.netty.buffer.ByteBuf
 import java.nio.charset.StandardCharsets
 
-class Query: PostgresSQLPacket, IncomingPacket {
+class Query: IncomingPacket {
     var queryString: String? = null;
     override fun parse(buf: ByteBuf): IncomingPacket {
 //        val query = buf.toString(StandardCharsets.UTF_8)

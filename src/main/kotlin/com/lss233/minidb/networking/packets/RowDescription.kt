@@ -3,7 +3,7 @@ package com.lss233.minidb.networking.packets
 import io.netty.buffer.ByteBuf
 import java.nio.charset.StandardCharsets
 
-class RowDescription: PostgresSQLPacket, OutgoingPacket {
+class RowDescription: OutgoingPacket {
     val rowData = ArrayList<RowData>()
     override fun write(buf: ByteBuf): OutgoingPacket {
         buf.writeShort(rowData.size)

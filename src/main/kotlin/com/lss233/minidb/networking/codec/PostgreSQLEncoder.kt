@@ -15,14 +15,13 @@ class PostgreSQLEncoder(private val session: Session) : MessageToByteEncoder<Out
         val buf = Unpooled.buffer()
         msg?.write(buf)
 
-        val type = mType?.type?.toInt() ?: 'E'.code
+        val type = mType?.type?.toInt() ?: '?'.code
+        // '?' 代表未知标识符
         val len = buf.writerIndex() + 4
         println("<- ${msg?.javaClass?.simpleName}(${type.toChar()}) len $len")
 
-//        val bytes = buf.array()
         out?.writeByte(type)
         out?.writeInt(len)
-//        out?.writeInt(bytes.size)
         out?.writeBytes(buf, buf.writerIndex())
     }
 

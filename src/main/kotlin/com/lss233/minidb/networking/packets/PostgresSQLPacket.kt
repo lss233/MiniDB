@@ -2,11 +2,11 @@ package com.lss233.minidb.networking.packets
 
 import io.netty.buffer.ByteBuf
 
-interface PostgresSQLPacket {
+interface PostgreSQLPacket {
 }
-interface OutgoingPacket {
+interface OutgoingPacket: PostgreSQLPacket {
     fun write(buf: ByteBuf): OutgoingPacket
 }
-interface IncomingPacket {
+interface IncomingPacket: PostgreSQLPacket {
     fun parse(buf: ByteBuf): IncomingPacket
 }
