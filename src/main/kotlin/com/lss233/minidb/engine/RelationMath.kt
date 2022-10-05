@@ -4,9 +4,8 @@ import java.util.stream.Collectors
 
 class RelationMath {
     companion object {
-        fun cartesianProduct(vararg args: List<Any>):List<List<Any>> {
+        fun cartesianProduct(vararg args: List<Any>): Relation {
             var result: List<List<Any>> = ArrayList();
-//            args.flatMap {  }
             for (list in args) {
                 if(result.isEmpty()) {
                     result = arrayListOf(list);
@@ -25,13 +24,13 @@ class RelationMath {
                     } }}.collect(Collectors.toList())
                 }
             }
-            val ret = ArrayList<List<Any>>()
+            val relation = Relation()
             for (list in result) {
                 for (arr in list) {
-                    ret.add(arr as List<Any>)
+                    relation.tuples.add(arr as NTuple)
                 }
             }
-            return ret
+            return relation
         }
         fun union(r: Set<Any>, s: Set<Any>): Set<Any> {
             val result = HashSet<Any>()
