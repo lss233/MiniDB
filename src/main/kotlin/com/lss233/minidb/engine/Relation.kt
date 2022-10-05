@@ -1,12 +1,13 @@
 package com.lss233.minidb.engine
 
-import java.util.function.Consumer
+import com.lss233.minidb.utils.ConsoleTableBuilder
 import java.util.function.Predicate
 
 /**
  * 关系
  */
 class Relation {
+
     val tuples = ArrayList<NTuple>()
 
     /**
@@ -14,6 +15,10 @@ class Relation {
      */
     infix fun select(predicate: Predicate<NTuple>):List<NTuple> {
         return tuples.filter { i -> predicate.test(i) }.toList();
+    }
+
+    override fun toString(): String {
+        return ConsoleTableBuilder().withBody(*tuples.toTypedArray()).build();
     }
 
 }
