@@ -1,6 +1,8 @@
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.RelationMath
 import com.lss233.minidb.networking.NettyServer
+import java.util.function.Predicate
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -15,6 +17,12 @@ fun main(args: Array<String>) {
     println(retval)
     val a = NTuple();
     print(RelationMath.union(d1.toSet(), d2.toSet()))
+    val relation = Relation()
+    val subset = relation select Predicate {
+        run {
+            it[0] == "A"
+        } }
+    println(subset)
 //    val server = NettyServer()
 
 //    server.start()
