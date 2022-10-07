@@ -4,34 +4,14 @@ import java.util.stream.Collectors
 
 class RelationMath {
     companion object {
-        fun cartesianProduct(vararg args: List<Any>): Relation {
-            var result: List<List<Any>> = ArrayList();
-            for (list in args) {
-                if(result.isEmpty()) {
-                    result = arrayListOf(list);
-                } else {
-                    result = result.stream().flatMap { row -> list.stream().map { item -> run {
-                        row.stream().map { col -> run {
-                            val arr = NTuple()
-                            if(col is List<*>) {
-                                col.forEach{i -> arr.add(i as Any)}
-                            } else {
-                                arr.add(col)
-                            }
-                            arr.add(item)
-                            arr
-                        } }.collect(Collectors.toList())
-                    } }}.collect(Collectors.toList())
+        fun cartesianProduct(vararg sets: Set<Any>): Relation =
+            Relation(
+                sets.fold(listOf(NTuple())) { acc, set ->
+                    acc.flatMap { tuple -> set.map { element -> tuple + element } }
                 }
-            }
-            val relation = Relation()
-            for (list in result) {
-                for (arr in list) {
-                    relation.tuples.add(arr as NTuple)
-                }
-            }
-            return relation
-        }
+                .toSet()
+            )
+
         fun union(r: Set<Any>, s: Set<Any>): Set<Any> {
             val result = HashSet<Any>()
             result.addAll(r)
