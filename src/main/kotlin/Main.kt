@@ -2,39 +2,77 @@ import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.RelationMath
 import com.lss233.minidb.networking.NettyServer
-import com.lss233.minidb.utils.ConsoleTableBuilder
-import java.util.function.Predicate
-import java.util.stream.Collectors
-import java.util.stream.Stream
+import miniDB.parser.ast.expression.Expression
+import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
+import miniDB.parser.ast.expression.logical.LogicalAndExpression
+import miniDB.parser.ast.expression.logical.LogicalOrExpression
+import miniDB.parser.ast.fragment.tableref.OuterJoin
+import miniDB.parser.ast.stmt.dml.DMLSelectStatement
+import miniDB.parser.recognizer.SQLParserDelegate
+import miniDB.parser.visitor.Visitor
+import kotlin.system.measureNanoTime
 
+fun where(expression: Expression) : Boolean {
+    return when(expression) {
+        is LogicalOrExpression -> {
+            for(i in 0 until expression.arity) {
+                if (where(expression.getOperand(i))) {
+                    return true
+                }
+            }
+            return false
+        }
+        is LogicalAndExpression -> {
+            for(i in 0 until expression.arity) {
+                if (!where(expression.getOperand(i))) {
+                    return false
+                }
+            }
+            return true
+        }
+        is ComparisionEqualsExpression -> {
+            println("Now checking ${expression.leftOprand} == ${expression.rightOprand}")
 
+            return true
+        }
+
+        else -> {
+            println("Unsatisfying ${expression.toString() }")
+            return true
+        }
+    }
+}
 fun main(args: Array<String>) {
     println("MiniDB!")
-    val d1 = listOf("1", "2", "3")
-    val d2 = listOf("1", "b", "3", "d", "2", "f")
-    val d3 = listOf("A", "B", "C", "D", "E", "F")
-    val d4 = listOf("Z", "X", "L")
-    val retval = RelationMath.cartesianProduct(d1, d2, d3, d4);
-    println(retval)
-    val a = NTuple();
-    print(RelationMath.union(d1.toSet(), d2.toSet()))
-    val relation = Relation()
-    val subset = relation select Predicate {
-        run {
-            it[0] == "A"
-        } }
-    println(subset)
+    val d1 = setOf("1", "2", "3")
+    val d2 = setOf("1", "b", "3", "d", "2", "f")
+    val d3 = setOf("A", "B", "C", "D", "E", "F")
+    val d4 = (1 until 10000).toSet()
+//    val d4 = listOf("Z", "X", "L")
+    val elapsed = measureNanoTime  {
+        val relation = RelationMath.cartesianProduct(d1, d2, d3, d4);
+        val subset = relation select { row: NTuple, _: Relation ->
+            row[0] == "1"
+        }
 
-    println(ConsoleTableBuilder()
-        .withHeaders("No", "First Name", "Last Name", "Age")
-        .withBody(
-            setOf("1", "John", "Doe", "18"),
-            listOf("2", "Kevin", "Smith", "44"),
-            listOf("3", "Jeff", "Dean", "87"),
-            listOf("4", "Larry", "Page", "14"),
-        )
-        .build())
-//    val server = NettyServer()
+        println(relation)
+        println(subset)
+    }
+    println("Time elapsed $elapsed nano seconds")
+
+
+    val ast = SQLParserDelegate.parse("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1") as DMLSelectStatement
+
+    val k = ast.tables.tableReferenceList[0] as OuterJoin
+    val visitor = object: Visitor() {
+
+    }
+    ast.accept(visitor)
+    println(ast.tables.tableReferenceList[0])
+    where(ast.where)
+
+//    println(subset)
+    val server = NettyServer()
 
 //    server.start()
 
