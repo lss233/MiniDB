@@ -14,8 +14,17 @@ class Relation {
      * 选择算子
      */
     infix fun select(predicate: Predicate<NTuple>):List<NTuple> {
-        return tuples.filter { i -> predicate.test(i) }.toList();
+        return tuples.filter { i -> predicate.test(i) }.toList()
     }
+
+
+    /**
+     * 投影算子
+     */
+    fun projection(predicate: Predicate<NTuple>):List<NTuple> {
+        return tuples.filter { it -> predicate.test(it) }.toList()
+    }
+
 
     override fun toString(): String {
         return ConsoleTableBuilder().withBody(*tuples.toTypedArray()).build();

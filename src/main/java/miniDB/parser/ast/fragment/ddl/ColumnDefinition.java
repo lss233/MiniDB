@@ -11,9 +11,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * (created at 2012-8-13)
- */
 package miniDB.parser.ast.fragment.ddl;
 
 import miniDB.parser.ast.ASTNode;
@@ -23,20 +20,22 @@ import miniDB.parser.ast.fragment.ddl.datatype.DataType;
 import miniDB.parser.visitor.Visitor;
 
 /**
+ * (created at 2012-8-13)
  * NOT FULL AST
- * 
+ * 列定义
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
+
 public class ColumnDefinition implements ASTNode {
-    public static enum SpecialIndex {
+    public enum SpecialIndex {
         PRIMARY, UNIQUE,
     }
 
-    public static enum ColumnFormat {
+    public enum ColumnFormat {
         FIXED, DYNAMIC, DEFAULT,
     }
 
-    public static enum Storage {
+    public enum Storage {
         DISK, MEMORY, DEFAULT
     }
 

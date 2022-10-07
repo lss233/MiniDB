@@ -1,23 +1,25 @@
 package miniDB
 
-import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
-import miniDB.parser.recognizer.SQLParserDelegate
-import java.sql.SQLSyntaxErrorException
+import java.util.function.Predicate
 
-@Throws(SQLSyntaxErrorException::class)
 fun main(args: Array<String>) {
     println("Hello World!")
 
-    val sql =
-        "CREATE TABLE `Test` ( Id_P int,LastName varchar(255),FirstName varchar(255),Address varchar(255),City varchar(255))"
-    // 通过解析SQL后得到建表的实体类
-    val ast: DDLCreateTableStatement = SQLParserDelegate.parse(sql) as DDLCreateTableStatement
+    val isUserNameValid =
+        Predicate { u: String? -> u != null && u.length > 2 && u.length < 10 }
 
-    println("解析：创建表:" + ast.table.idText)
-
-
+    println(projection(isUserNameValid))
     // Try adding program arguments via Run/Debug configuration.
     // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
     println("Program arguments: ${args.joinToString()}")
 }
 
+fun projection(predicate: Predicate<String?>):List<String> {
+    println("Test Predicate")
+    val tuples = ArrayList<String>()
+    tuples.add("1")
+    tuples.add("2")
+    tuples.add("321")
+    tuples.add("666")
+    return tuples.filter { i -> predicate.test(i) }.toList()
+}

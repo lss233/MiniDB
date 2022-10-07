@@ -113,9 +113,6 @@ public class DMLSelectStatement extends DMLQueryStatement {
     private OrderBy outermostOrderBy;
     private Limit limit;
 
-    /**
-     * @throws SQLSyntaxErrorException
-     */
     @SuppressWarnings("unchecked")
     public DMLSelectStatement(SelectOption option, List<Pair<Expression, String>> selectExprList,
             TableReferences tables, Expression where, GroupBy group, Expression having,
