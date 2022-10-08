@@ -9,4 +9,3 @@ class NTuple: ArrayList<Any>() {
     }
 
 }
-
