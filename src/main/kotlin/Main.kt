@@ -1,6 +1,7 @@
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.RelationMath
+import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.networking.NettyServer
 import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
@@ -44,13 +45,12 @@ fun where(expression: Expression) : Boolean {
 }
 fun main(args: Array<String>) {
     println("MiniDB!")
-    val d1 = setOf("1", "2", "3")
-    val d2 = setOf("1", "b", "3", "d", "2", "f")
-    val d3 = setOf("A", "B", "C", "D", "E", "F")
-    val d4 = (1 until 10000).toSet()
+    val d1 = Pair(Column("ID"), setOf("1", "2", "3"))
+    val d2 = Pair(Column("Name"), setOf("1", "b", "3", "d", "2", "f"))
+    val d3 = Pair(Column("Last Name"), setOf("A", "B", "C", "D", "E", "F"))
 //    val d4 = listOf("Z", "X", "L")
     val elapsed = measureNanoTime  {
-        val relation = RelationMath.cartesianProduct(d1, d2, d3, d4);
+        val relation = RelationMath.cartesianProduct(d1, d2);
         val subset = relation select { row: NTuple, _: Relation ->
             row[0] == "1"
         }

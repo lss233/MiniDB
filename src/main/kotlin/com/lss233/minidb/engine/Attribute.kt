@@ -6,7 +6,7 @@ package com.lss233.minidb.engine
  * @version 1.0
  */
 
-class Attribute constructor(val colName:String, val value:Any){
+class Attribute constructor(val name:String, val value:Any){
 
 
     // TODO 数据类型枚举&序列化与反序列化

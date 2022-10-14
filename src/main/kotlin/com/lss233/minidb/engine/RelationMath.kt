@@ -1,15 +1,18 @@
 package com.lss233.minidb.engine
 
+import com.lss233.minidb.engine.schema.Column
 import java.util.stream.Collectors
 
 class RelationMath {
     companion object {
-        fun cartesianProduct(vararg sets: Set<Any>): Relation =
+        fun cartesianProduct(vararg sets: Pair<Column, Set<Any>>): Relation =
             Relation(
-                sets.fold(listOf(NTuple())) { acc, set ->
+                sets.map{ i -> i.first }.toSet().toTypedArray(),
+                sets.map { i -> i.second }.fold(listOf(NTuple())) { acc, set ->
                     acc.flatMap { tuple -> set.map { element -> tuple + element } }
                 }
                 .toSet()
+                    .toTypedArray()
             )
 
         fun union(r: Set<Any>, s: Set<Any>): Set<Any> {

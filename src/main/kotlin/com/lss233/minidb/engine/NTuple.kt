@@ -8,4 +8,12 @@ class NTuple: ArrayList<Any>() {
         return result
     }
 
+    companion object {
+        fun from(vararg items: Any): NTuple {
+            val tuple = NTuple();
+            tuple.addAll(items)
+            return tuple
+        }
+    }
+
 }
