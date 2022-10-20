@@ -15,5 +15,4 @@ class NTuple: ArrayList<Any>() {
             return tuple
         }
     }
-
 }

@@ -6,16 +6,23 @@ package com.lss233.minidb.engine
  * @version 1.0
  */
 
-class Attribute constructor(val name:String, val value:Any){
+class Attribute<T> (colName:String, value:T){
+
+    private var colName: String ?= colName
+
+    private var value: T ?= value
 
 
-    // TODO 数据类型枚举&序列化与反序列化
     fun serialize() {
 
     }
 
     fun deserialize() {
 
+    }
+
+    fun getValue(): T? {
+        return this.value
     }
 
 }
