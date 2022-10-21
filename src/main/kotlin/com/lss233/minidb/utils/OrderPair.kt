@@ -6,17 +6,15 @@ package com.lss233.minidb.utils
  * @version 1.0
  */
 
-class OrderPair<K : Any,V : Any>(key: K, value: V) {
+class OrderPair<V : Any>(private var order: Int, value: V) {
 
-    private var key: K? = key
     private var value: V? = value
 
-    fun getKey(): K? {
-        return this.key
+    fun getOrder(): Int {
+        return this.order
     }
 
     fun getValue(): V? {
         return this.value
     }
-
 }

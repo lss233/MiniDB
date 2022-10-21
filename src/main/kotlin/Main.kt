@@ -1,4 +1,4 @@
-import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.NTupleAbandon
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.RelationMath
 import com.lss233.minidb.engine.schema.Column
@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
 //    val d4 = listOf("Z", "X", "L")
     val elapsed = measureNanoTime  {
         val relation = RelationMath.cartesianProduct(d1, d2);
-        val subset = relation select { row: NTuple, _: Relation ->
+        val subset = relation select { row: NTupleAbandon, _: Relation ->
             row[0] == "1"
         }
 

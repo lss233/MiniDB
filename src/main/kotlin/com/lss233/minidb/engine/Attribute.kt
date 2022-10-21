@@ -1,17 +1,16 @@
 package com.lss233.minidb.engine
 
+import com.lss233.minidb.utils.OrderPair
+
 /**
  * @author  <a href="mailto:icebigpig404@foxmail.com">icebigpig</a>
  * @date    2022/10/5 11:20
  * @version 1.0
  */
 
-class Attribute<T> (colName:String, value:T){
+class Attribute<V: OrderPair<*>> : ArrayList<V>() {
 
-    private var colName: String ?= colName
-
-    private var value: T ?= value
-
+    private var colName: String ?= null
 
     fun serialize() {
 
@@ -21,8 +20,11 @@ class Attribute<T> (colName:String, value:T){
 
     }
 
-    fun getValue(): T? {
-        return this.value
+    fun setColName(colName: String) {
+        this.colName = colName
     }
 
+    fun getColName() : String? {
+        return this.colName
+    }
 }

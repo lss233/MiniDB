@@ -1,8 +1,9 @@
 package miniDB
 
+import com.lss233.minidb.engine.Attribute
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.utils.OrderPair
-import javax.management.Attribute
+
 
 fun main(args: Array<String>) {
     test()
@@ -12,18 +13,26 @@ fun main(args: Array<String>) {
 }
 
 fun test() {
-
-    val items = ArrayList<OrderPair<*, *>>()
+    val attribute = Attribute<OrderPair<*>>()
 
     for (i in 1..12) {
-        val orderPair = OrderPair(i, i)
-        items.add(orderPair)
+        val orderPair = OrderPair(i,i.toString())
+        attribute.add(orderPair)
     }
-    val attribute = Attribute("name",items)
+
+    for (i in attribute) {
+        println(i.getOrder())
+        println(i.getValue())
+    }
 
     val nTuple = NTuple()
-    nTuple.add(attribute)
 
-    println(nTuple[0])
+
+    nTuple.setAttributes(listOf(attribute))
+
+    /**
+     * Test
+     */
+    println(nTuple.getAttributes()?.get(0)?.get(0)?.getValue())
 
 }
