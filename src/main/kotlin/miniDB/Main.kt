@@ -1,28 +1,38 @@
 package miniDB
 
+import com.lss233.minidb.engine.Attribute
 import com.lss233.minidb.engine.NTuple
-import java.util.function.BiPredicate
+import com.lss233.minidb.utils.OrderPair
+
 
 fun main(args: Array<String>) {
-    println("Hello World!")
-
-    var tuple: NTuple? =null
-
-    val testValid = BiPredicate {  t:String,u: String -> u.isNotEmpty() && t.isNotEmpty() }
-
-    println(projection_test(testValid))
-
+    test()
     // Try adding program arguments via Run/Debug configuration.
     // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
     println("Program arguments: ${args.joinToString()}")
 }
 
-fun projection_test(predicate: BiPredicate<String, String>):List<String> {
-    println("Test BiPredicate")
-    val tuples = ArrayList<String>()
-    tuples.add("1")
-    tuples.add("2")
-    tuples.add("321")
-    tuples.add("666")
-    return tuples.filter { i -> predicate.test(i,"123") }.toList()
+fun test() {
+    val attribute = Attribute<OrderPair<*>>()
+
+    for (i in 1..12) {
+        val orderPair = OrderPair(i,i.toString())
+        attribute.add(orderPair)
+    }
+
+    for (i in attribute) {
+        println(i.getOrder())
+        println(i.getValue())
+    }
+
+    val nTuple = NTuple()
+
+
+    nTuple.setAttributes(listOf(attribute))
+
+    /**
+     * Test
+     */
+    println(nTuple.getAttributes()?.get(0)?.get(0)?.getValue())
+
 }

@@ -1,15 +1,17 @@
 package com.lss233.minidb.engine
 
+import com.lss233.minidb.utils.OrderPair
+
 /**
  * @author  <a href="mailto:icebigpig404@foxmail.com">icebigpig</a>
  * @date    2022/10/5 11:20
  * @version 1.0
  */
 
-class Attribute constructor(val name:String, val value:Any){
+class Attribute<V: OrderPair<*>> : ArrayList<V>() {
 
+    private var colName: String ?= null
 
-    // TODO 数据类型枚举&序列化与反序列化
     fun serialize() {
 
     }
@@ -18,4 +20,11 @@ class Attribute constructor(val name:String, val value:Any){
 
     }
 
+    fun setColName(colName: String) {
+        this.colName = colName
+    }
+
+    fun getColName() : String? {
+        return this.colName
+    }
 }

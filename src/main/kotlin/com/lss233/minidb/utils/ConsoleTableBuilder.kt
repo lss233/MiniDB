@@ -1,6 +1,6 @@
 package com.lss233.minidb.utils
 
-import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.NTupleAbandon
 
 class ConsoleTableBuilder {
     private val headers = ArrayList<String>();
@@ -14,7 +14,7 @@ class ConsoleTableBuilder {
         }
         return this
     }
-    fun withBody(vararg tuples: NTuple): ConsoleTableBuilder {
+    fun withBody(vararg tuples: NTupleAbandon): ConsoleTableBuilder {
         body.clear()
         for(row in tuples) {
             body.add(row);
