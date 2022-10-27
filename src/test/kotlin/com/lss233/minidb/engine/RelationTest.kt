@@ -9,7 +9,7 @@ internal class RelationTest {
     private val relation = Relation(
         arrayOf(Column("Id"), Column("Name")),
         arrayOf(
-            NTuple.from("1", "Cat"),
+            NTuple.from(*setOf("1", "Cat").toTypedArray()),
             NTuple.from("2", "Fox"),
             NTuple.from("3", "Dog"),
         )

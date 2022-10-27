@@ -2,6 +2,7 @@ import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.RelationMath
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.NettyServer
 import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
@@ -62,7 +63,7 @@ fun main(args: Array<String>) {
 
 
     val ast = SQLParserDelegate.parse("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1") as DMLSelectStatement
-
+    ast.accept(SelectStatementVisitor())
     val k = ast.tables.tableReferenceList[0] as OuterJoin
     val visitor = object: Visitor() {
 
