@@ -9,7 +9,7 @@ import java.util.function.BiPredicate
  * Each relation is made of either a list of Tuples
  * Or many list of Domains
  */
-class Relation(val columns: Array<Column>, val tuples: Array<NTuple>) {
+open class Relation(val columns: Array<Column>, val tuples: Array<NTuple>) {
     private fun projection(projectColumn: Array<Column>): Relation {
         val projectTuples = HashSet<NTuple>();
 
