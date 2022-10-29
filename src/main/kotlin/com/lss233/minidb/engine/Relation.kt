@@ -42,6 +42,14 @@ open class Relation(val columns: Array<Column>, val tuples: Array<NTupleAbandon>
     fun conditionalJoin(relation: Relation, condition: BiPredicate<NTupleAbandon, NTupleAbandon>) {
         
     }
+    fun outerJoin(relation: Relation, leftJoin: Boolean) {
+
+
+    }
+    fun naturalJoin(relation: Relation) {
+    }
+
+
     override fun toString(): String =
         ConsoleTableBuilder()
             .withHeaders(*columns.map{ i -> i.name }.toTypedArray())

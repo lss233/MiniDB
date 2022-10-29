@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.visitor
 
 import com.lss233.minidb.engine.Relation
+import com.lss233.minidb.engine.memory.Engine
 import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.fragment.tableref.TableRefFactor
 import miniDB.parser.ast.fragment.tableref.TableReference
@@ -17,15 +18,20 @@ class TableVisitor: Visitor() {
     }
     override fun visit(node: TableRefFactor) {
         currentTableRef = node
-
-        node.table.idText
+        currentRelation = Engine.databases["db"]?.tables?.get(node.table.idText)
     }
     override fun visit(node: OuterJoin) {
         stackDeep++;
         node.leftTableRef.accept(this)
-        val leftTableRef = currentTableRef
+        val leftTable = currentRelation
         node.rightTableRef.accept(this)
-        val rightTableRef = currentTableRef
+        val rightTable = currentRelation
+        if(node.isLeftJoin) {
+            if (rightTable != null) {
+                leftTable?.join(rightTable)
+            }
+        }
+
 
     }
 
