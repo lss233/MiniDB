@@ -8,9 +8,8 @@ import com.lss233.minidb.utils.OrderPair
  * @version 1.0
  */
 
-class Attribute<V: OrderPair<*>> : ArrayList<V>() {
+class Attribute<V: OrderPair<*>>(private var colName: String) : ArrayList<V>() {
 
-    private var colName: String ?= null
 
     fun serialize() {
 
@@ -24,7 +23,7 @@ class Attribute<V: OrderPair<*>> : ArrayList<V>() {
         this.colName = colName
     }
 
-    fun getColName() : String? {
+    fun getColName():String? {
         return this.colName
     }
 }

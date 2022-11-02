@@ -9,19 +9,20 @@ import java.util.function.BiPredicate
  * Each relation is made of either a list of Tuples
  * Or many list of Domains
  */
-open class Relation(val columns: Array<Column>, val tuples: Array<NTupleAbandon>) {
+open class Relation(val columns: Array<Column>, val tuples: Array<NTuple>) {
     private fun projection(projectColumn: Array<Column>): Relation {
-        val projectTuples = HashSet<NTupleAbandon>();
+        val projectTuples = HashSet<NTuple>();
 
         for(column in projectColumn) {
             projectTuples.add(this.tuples[this.columns.indexOf(column)]);
         }
         return Relation(projectColumn, tuples)
     }
+
     /**
      * 选择算子
      */
-    infix fun select(biPredicate: BiPredicate<NTupleAbandon, Relation>): Relation {
+    infix fun select(biPredicate: BiPredicate<NTuple, Relation>): Relation {
         return Relation(columns, tuples.filter { i -> biPredicate.test(i, this) }.toSet().toTypedArray())
     }
 
@@ -39,7 +40,7 @@ open class Relation(val columns: Array<Column>, val tuples: Array<NTupleAbandon>
         Relation(
             setOf(*relation.columns).plus(this.columns).toTypedArray(),
             setOf(*relation.tuples).plus(this.tuples).toTypedArray())
-    fun conditionalJoin(relation: Relation, condition: BiPredicate<NTupleAbandon, NTupleAbandon>) {
+    fun conditionalJoin(relation: Relation, condition: BiPredicate<NTuple, NTuple>) {
         
     }
     fun outerJoin(relation: Relation, leftJoin: Boolean) {
@@ -47,8 +48,8 @@ open class Relation(val columns: Array<Column>, val tuples: Array<NTupleAbandon>
 
     }
     fun naturalJoin(relation: Relation) {
-    }
 
+    }
 
     override fun toString(): String =
         ConsoleTableBuilder()

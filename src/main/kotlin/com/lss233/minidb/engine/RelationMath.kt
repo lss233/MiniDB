@@ -4,15 +4,15 @@ import com.lss233.minidb.engine.schema.Column
 
 class RelationMath {
     companion object {
-        fun cartesianProduct(vararg sets: Pair<Column, Set<Any>>): Relation =
-            Relation(
-                sets.map{ i -> i.first }.toSet().toTypedArray(),
-                sets.map { i -> i.second }.fold(listOf(NTupleAbandon())) { acc, set ->
-                    acc.flatMap { tuple -> set.map { element -> tuple + element } }
-                }
-                .toSet()
-                    .toTypedArray()
-            )
+//        fun cartesianProduct(vararg sets: Pair<Column, Set<Any>>): Relation =
+//            Relation(
+//                sets.map{ i -> i.first }.toSet().toTypedArray(),
+//                sets.map { i -> i.second }.fold(listOf(NTupleAbandon())) { acc, set ->
+//                    acc.flatMap { tuple -> set.map { element -> tuple + element } }
+//                }
+//                .toSet()
+//                    .toTypedArray()
+//            )
 
         fun union(r: Set<Any>, s: Set<Any>): Set<Any> {
             val result = HashSet<Any>()

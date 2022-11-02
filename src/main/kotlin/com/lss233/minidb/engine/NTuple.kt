@@ -1,22 +1,19 @@
 package com.lss233.minidb.engine
 
-import com.lss233.minidb.utils.OrderPair
-
-/**
- * @author  <a href="mailto:icebigpig404@foxmail.com">icebigpig</a>
- * @date    2022/10/21 11:10
- * @version 1.0
- */
-
-class NTuple {
-
-    private var attributes:List<Attribute<OrderPair<*>>> ?= null
-
-    fun setAttributes(attributes: List<Attribute<OrderPair<*>>>) {
-        this.attributes = attributes
+class NTuple: ArrayList<Any>() {
+    operator fun plus(element: Any?): NTuple {
+        val result = NTuple()
+        result.addAll(this)
+        result.add(element!!)
+        return result
     }
 
-    fun getAttributes(): List<Attribute<OrderPair<*>>>? {
-        return this.attributes
+    companion object {
+        fun from(vararg items: Any): NTuple {
+            val tuple = NTuple();
+            tuple.addAll(items)
+            return tuple
+        }
     }
+
 }
