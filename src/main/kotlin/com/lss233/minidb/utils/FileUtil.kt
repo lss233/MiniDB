@@ -1,6 +1,7 @@
 package com.lss233.minidb.utils
 
 import java.io.File
+import java.nio.charset.Charset
 
 /**
  * 读取文件数据的工具类，工具类内的方法可以对当前数据库内的数据进行读写操作
@@ -9,17 +10,26 @@ import java.io.File
 class FileUtil (private val dataBaseName:String){
 
     // TODO 文件系统设计按照不同数据库拥有单独的文件夹，文件夹下存放所有的表
-    val currentDir = System.getProperty(".") + "\\out"
+    private val currentDir = System.getProperty(".") + "\\out"
 
     private val suffix = ".mdb"
 
     /**
-     * 读取整个表格文件
+     * 以字节流方式读取整个表格文件
      * @param tableName 表格名（无需加后缀）
      */
-    fun readFile(tableName:String): ByteArray {
+    fun readFileAsByteArray(tableName:String): ByteArray {
         val file = File(tableName + suffix)
         return file.readBytes()
+    }
+
+    /**
+     * 以字符流方式读取整个表格文件
+     * @param tableName 表格名（无需加后缀）
+     */
+    fun readFileAsString(tableName:String): String {
+        val file = File(tableName + suffix)
+        return file.readBytes().toString(Charset.defaultCharset())
     }
 
     // TODO 对于文件的读取，可能需要进行考虑设计是否需要块读取（部分读取）
