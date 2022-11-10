@@ -44,6 +44,6 @@ class Page {
     /**
      * 当前页存储的数据
      */
-    var data :ByteArray ?= null
+    var data:ByteArray ?= null
 
 }
