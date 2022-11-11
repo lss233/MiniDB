@@ -14,14 +14,14 @@ class RelationMath {
 //                    .toTypedArray()
 //            )
 
-        fun union(r: Set<Any>, s: Set<Any>): Set<Any> {
-            val result = HashSet<Any>()
+        fun <T> union(r: Set<T>, s: Set<T>): Set<T> {
+            val result = HashSet<T>()
             result.addAll(r)
-            result.add(s)
+            result.addAll(s)
             return result
         }
-        fun except(r: Set<Any>, s: Set<Any>): Set<Any> {
-            val result = HashSet<Any>(r);
+        fun <T> except(r: Set<T>, s: Set<T>): Set<T> {
+            val result = HashSet<T>(r);
             for(item in s) {
                 if(result.contains(item)) {
                     result.remove(item)

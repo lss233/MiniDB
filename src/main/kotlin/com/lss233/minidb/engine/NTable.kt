@@ -59,11 +59,11 @@ class NTable constructor(private var tableName:String, private var attributes:Li
      * @param line 行号（从0开始）
      * @return 一整行的数据
      */
-    fun getNTuple(line:Int): NTuple {
-        val nTuple = NTuple()
-        for (i in this.attributes) {
-            nTuple.plus(Cell(i.getColName(), i[line]))
-        }
-        return nTuple
-    }
+//    fun getNTuple(line:Int): NTuple {
+//        val nTuple = NTuple()
+//        for (i in this.attributes) {
+//            nTuple.add(Cell(i.getColName()), i[line]))
+//        }
+//        return nTuple
+//    }
 }

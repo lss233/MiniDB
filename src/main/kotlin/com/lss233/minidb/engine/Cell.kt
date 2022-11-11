@@ -1,17 +1,28 @@
 package com.lss233.minidb.engine
 
+import com.lss233.minidb.engine.schema.Column
+
 /**
  * 行式存储结构中的单体数据(单元格数据)
- * @param colName 数据所标记的列
- * @param data 单元格中存储的数据
+ * @param column 数据所标记的列
+ * @param value 单元格中存储的数据
  */
-class Cell constructor(private var colName: String, private var data: Any) {
+class Cell<T> constructor(var column: Column, var value: T) {
 
-    fun getColName():String {
-        return this.colName
+    override fun equals(other: Any?): Boolean {
+        return if (other is Cell<*>)
+            value == other.value
+        else
+            false
     }
 
-    fun getData():Any {
-        return this.data
+    override fun toString(): String {
+        return value.toString()
+    }
+
+    override fun hashCode(): Int {
+        var result = column.hashCode()
+        result = 31 * result + (value?.hashCode() ?: 0)
+        return result
     }
 }
