@@ -15,7 +15,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.netty:netty-all:4.1.82.Final")
+    implementation("io.netty:netty-all:4.1.84.Final")
+    implementation("hu.webarticum:tree-printer:2.1.0")
     testImplementation(kotlin("test"))
 }
 
