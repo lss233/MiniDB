@@ -1,16 +1,18 @@
 package com.lss233.minidb.engine.config
 
-
+/**
+ * 数据库存储的基本配置项
+ */
 class DBConfig {
 
     companion object {
 
-        @JvmField
-        val DB_ROOT_PATH :String = "D:\\db\\"
+        const val DB_ROOT_PATH :String = "E:\\MiniDB_Data\\"
 
-        @JvmField
-        val IO_LINKED_BLOCK_QUEUE_SIZE:Int = 500
+        const val IO_LINKED_BLOCK_QUEUE_SIZE:Int = 500
 
-        val FILE_SUFFIX:String = ".db"
+        const val FILE_SUFFIX:String = ".db"
+
+        const val TABLE_SUFFIX:String = ".tb"
     }
 }

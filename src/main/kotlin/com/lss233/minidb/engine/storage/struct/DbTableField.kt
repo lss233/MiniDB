@@ -11,7 +11,7 @@ class DbTableField constructor(var filedName: String){
     /**
      * byte长度
      */
-    var byteLen: Int? = null
+    var byteLen: Int = 0
 
     /**
      * 存储类型

@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     implementation("io.netty:netty-all:4.1.82.Final")
+    implementation("cn.hutool:hutool-all:5.8.9")
     testImplementation(kotlin("test"))
 }
 

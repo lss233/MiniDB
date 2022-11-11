@@ -1,5 +1,6 @@
 package miniDB
 
+import com.lss233.minidb.engine.storage.executor.Create
 import com.lss233.minidb.engine.storage.page.Page
 import com.lss233.minidb.utils.FileUtil
 import java.io.*
@@ -7,9 +8,10 @@ import java.nio.charset.Charset
 
 fun main(args: Array<String>) {
 
-    var page = Page()
+    val create = Create()
 
-    test()
+    create.doCreate()
+
     // Try adding program arguments via Run/Debug configuration.
     // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
     println("Program arguments: ${args.joinToString()}")
@@ -20,8 +22,6 @@ fun test() {
     val currentDir = System.getProperty(".") + "\\out"
 
     val file = FileUtil("test")
-
-
 
     val s = "\n这是一个字符串类型数据，我要把这段文字转换成比特流存储。\n"
 
