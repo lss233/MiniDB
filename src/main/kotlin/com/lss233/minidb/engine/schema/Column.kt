@@ -1,11 +1,24 @@
 package com.lss233.minidb.engine.schema
 
+import miniDB.parser.ast.expression.primary.Identifier
+
 /**
  * 进行关系运算过滤中的封装列的信息实体
  * 作为参数使用
  */
 
-class Column(val name: String) {
+class Column {
+    val identifier : Identifier;
+    val name : String;
+
+    constructor(id: Identifier){
+        this.identifier = id;
+        this.name = id.idText
+    }
+    constructor(name: String) {
+        this.identifier = Identifier(null, name)
+        this.name = name
+    }
 
     /**
      * 重写equals方法
@@ -20,5 +33,9 @@ class Column(val name: String) {
 
     override fun hashCode(): Int {
         return name.hashCode()
+    }
+
+    fun getFullName(): String {
+        return identifier.idTextWithParent;
     }
 }

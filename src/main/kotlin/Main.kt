@@ -1,6 +1,11 @@
+import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.memory.Database
+import com.lss233.minidb.engine.memory.Engine
+import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.NettyServer
+import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
 import miniDB.parser.ast.expression.logical.LogicalAndExpression
@@ -9,64 +14,29 @@ import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.stmt.dml.DMLSelectStatement
 import miniDB.parser.recognizer.SQLParserDelegate
 import miniDB.parser.visitor.Visitor
+import kotlin.system.measureNanoTime
 
-fun where(expression: Expression) : Boolean {
-    return when(expression) {
-        is LogicalOrExpression -> {
-            for(i in 0 until expression.arity) {
-                if (where(expression.getOperand(i))) {
-                    return true
-                }
-            }
-            return false
-        }
-        is LogicalAndExpression -> {
-            for(i in 0 until expression.arity) {
-                if (!where(expression.getOperand(i))) {
-                    return false
-                }
-            }
-            return true
-        }
-        is ComparisionEqualsExpression -> {
-            println("Now checking ${expression.leftOprand} == ${expression.rightOprand}")
-
-            return true
-        }
-
-        else -> {
-            println("Unsatisfying ${expression.toString() }")
-            return true
-        }
-    }
-}
 fun main(args: Array<String>) {
     println("MiniDB!")
-    val d1 = Pair(Column("ID"), setOf("1", "2", "3"))
-    val d2 = Pair(Column("Name"), setOf("1", "b", "3", "d", "2", "f"))
-    val d3 = Pair(Column("Last Name"), setOf("A", "B", "C", "D", "E", "F"))
-//    val d4 = listOf("Z", "X", "L")
-//    val elapsed = measureNanoTime  {
-//        val relation = RelationMath.cartesianProduct(d1, d2);
-//        val subset = relation select { row: NTupleAbandon, _: Relation ->
-//            row[0] == "1"
-//        }
-//
-//        println(relation)
-//        println(subset)
-//    }
-//    println("Time elapsed $elapsed nano seconds")
 
-
+    val pg_sys = Database()
+    pg_sys.tables["pg_database"] = Table(arrayOf(Column("dattablespace"), Column("oid")), arrayOf(NTuple.from("1", "a"), NTuple.from("2", "b")))
+    pg_sys.tables["pg_tablespace"] = Table(arrayOf(Column("oid"), Column("d")), arrayOf(NTuple.from("1", "a"), NTuple.from("3", "b")))
+    Engine.databases["pg_sys"] = pg_sys
+    println("pg_database")
+    println(pg_sys.tables["pg_database"])
+    println("pg_tablespace")
+    println(pg_sys.tables["pg_tablespace"])
+    println("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1")
     val ast = SQLParserDelegate.parse("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1") as DMLSelectStatement
-    ast.accept(SelectStatementVisitor())
-    val k = ast.tables.tableReferenceList[0] as OuterJoin
-    val visitor = object: Visitor() {
+    val visitorXX = SelectStatementVisitor()
 
+    val elapsed = measureNanoTime  {
+        ast.accept(visitorXX)
+        TraditionalTreePrinter().print(visitorXX.rootNode)
+        println(visitorXX.relation)
     }
-    ast.accept(visitor)
-    println(ast.tables.tableReferenceList[0])
-    where(ast.where)
+    println("Time elapsed $elapsed nano seconds")
 
 //    println(subset)
     val server = NettyServer()

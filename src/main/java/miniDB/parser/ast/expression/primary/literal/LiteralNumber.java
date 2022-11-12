@@ -52,4 +52,13 @@ public class LiteralNumber extends Literal {
     public void setNumber(Number number) {
         this.number = number;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof LiteralNumber){
+            return getNumber().equals(((LiteralNumber) obj).getNumber());
+        } else {
+            return false;
+        }
+    }
 }
