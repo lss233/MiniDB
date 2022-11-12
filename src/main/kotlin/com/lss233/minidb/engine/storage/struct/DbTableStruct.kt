@@ -17,7 +17,7 @@ class DbTableStruct {
     /**
      * 记录数
      */
-    var recordNum: Int? = null
+    var recordNum: Int = 0
 
     /**
      * 字段信息
@@ -27,15 +27,15 @@ class DbTableStruct {
     /**
      * 该记录的byte长度
      */
-    var recordLen: Int? = null
+    var recordLen: Int = 0
 
     /**
      * 字段数
      */
-    var fieldNum: Int? = null
+    var fieldNum: Int = 0
 
 
-    var maxPK: Int? = null
+    var maxPK: Int = 0
 
 
     var fieldNameList = ArrayList<String>()

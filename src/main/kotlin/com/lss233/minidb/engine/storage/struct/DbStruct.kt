@@ -10,19 +10,27 @@ package com.lss233.minidb.engine.storage.struct
  * 3.将12生成的东西插入dbs。
  */
 class DbStruct {
-    //key：数据库名  v：库内表结构
-    var dbs = HashMap<String, HashMap<String, DbTableStruct>>()
 
-    fun add(dbName: String, tableInfo: HashMap<String, DbTableStruct>) {
-        dbs[dbName] = tableInfo
+    companion object {
+
+        //key：数据库名  v：库内表结构
+        var dbs = HashMap<String, HashMap<String, DbTableStruct>>()
+
+        @JvmStatic
+        fun add(dbName: String, tableInfo: HashMap<String, DbTableStruct>) {
+            dbs[dbName] = tableInfo
+        }
+
+        @JvmStatic
+        fun getTableStructByName(dbName: String, tableName: String): DbTableStruct? {
+            return dbs[dbName]!![tableName]
+        }
+
+        // TODO 设计问题  以后要改成真正的获取最大id而不是自增
+        @JvmStatic
+        fun getTableMaxId(dbName: String, tableName: String): Int {
+            return dbs[dbName]!![tableName]!!.recordNum!! + 1
+        }
     }
 
-    fun getTableStructByName(dbName: String, tableName: String): DbTableStruct? {
-        return dbs[dbName]!![tableName]
-    }
-
-    // TODO 设计问题  以后要改成真正的获取最大id而不是自增
-    fun getTableMaxId(dbName: String, tableName: String): Int {
-        return dbs[dbName]!![tableName]!!.recordNum!! + 1
-    }
 }
