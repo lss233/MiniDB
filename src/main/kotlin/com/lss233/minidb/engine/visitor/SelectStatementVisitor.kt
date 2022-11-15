@@ -28,10 +28,13 @@ class SelectStatementVisitor: Visitor() {
         stack.clear()
 
         node.tables.accept(this)
-        val table = stack.pop() as Relation
-        node.where.accept(this)
-        val cond = stack.pop() as Predicate<NTuple>
-        val wheres = table.select(cond)
+        var result = stack.pop() as Relation
+        if(node.where != null) {
+            node.where.accept(this)
+            val cond = stack.pop() as Predicate<NTuple>
+            result = result.select(cond)
+        }
+
         var condProjection : Predicate<Column>? = null
         for (expressionStringPair in node.selectExprList) {
             expressionStringPair.key.accept(this)
@@ -45,8 +48,8 @@ class SelectStatementVisitor: Visitor() {
                 condProjection.or(condLocal)
             }
         }
-        val selected = if (condProjection != null) wheres.projection(condProjection) else wheres.projection { true }
-        relation = selected
+        result = if (condProjection != null) result.projection(condProjection) else result.projection { true }
+        relation = result
 
     }
     override fun visit(node: TableReferences) {
@@ -89,7 +92,7 @@ class SelectStatementVisitor: Visitor() {
         node.table.accept(this)
         stack.pop()
         val table = Engine[node.table] ?: throw RuntimeException("ERROR 20001: No such table")
-        table.alias = node.alias
+        table.alias = if (node.alias != null) node.alias else node.table.idText
         stack.push(table)
         parentNode.addChild(rootNode)
         rootNode = parentNode
