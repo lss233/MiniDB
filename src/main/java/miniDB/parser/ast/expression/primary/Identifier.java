@@ -18,6 +18,8 @@ package miniDB.parser.ast.expression.primary;
 
 import miniDB.parser.visitor.Visitor;
 
+import java.util.Objects;
+
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
@@ -179,8 +181,11 @@ public class Identifier extends PrimaryExpression implements Cloneable {
             return true;
         if (obj instanceof Identifier) {
             Identifier that = (Identifier) obj;
+            if(that.parent == null && strEquals(this.idTextUpUnescape, that.idTextUpUnescape)) {
+                return true;
+            }
             return objEquals(this.parent, that.parent)
-                    && objEquals(this.idTextUpUnescape, that.idTextUpUnescape);
+                    && strEquals(this.idTextUpUnescape, that.idTextUpUnescape);
         }
         return false;
     }
@@ -192,6 +197,14 @@ public class Identifier extends PrimaryExpression implements Cloneable {
             return obj2 == null;
         return obj.equals(obj2);
     }
+
+    private static boolean strEquals(String str1, String str2) {
+        if(Objects.equals(str1, str2)) {
+            return true;
+        }
+        return str1.equals("*") || str2.equals("*");
+    }
+
 
     @Override
     public void accept(Visitor visitor) {

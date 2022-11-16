@@ -8,8 +8,12 @@ import miniDB.parser.ast.expression.primary.Identifier
  */
 
 class Column {
-    val identifier : Identifier;
-    val name : String;
+    val identifier : Identifier
+    val name : String
+//        set(value) {
+//            identifier = Identifier(null, value)
+//            field = value
+//        }
 
     constructor(id: Identifier){
         this.identifier = id;

@@ -17,7 +17,7 @@ object Engine {
         val db =  if(databases.containsKey(stack.peek().idText)) {
             databases[stack.pop().idText]
         } else {
-            databases["pg_sys"]
+            databases["pg_catalog"]
         }
         return db?.tables?.get(stack.pop().idText)
     }

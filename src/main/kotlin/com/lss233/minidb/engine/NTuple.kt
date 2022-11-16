@@ -57,7 +57,7 @@ class NTuple : ArrayList<Any>() {
 
     private fun indexOf(identifier: Identifier): Int {
         return columns
-            .indexOfFirst { i -> i.identifier == identifier }
+            .indexOfFirst { i -> if(identifier.parent == null || i.identifier.parent == null) { identifier.idText == i.identifier.idText } else { i.identifier.idTextWithParentUpUnescape == identifier.idTextWithParentUpUnescape} }
             .takeIf { it >= 0 } ?: throw RuntimeException("No such column named $identifier")
     }
 

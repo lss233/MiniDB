@@ -42,13 +42,14 @@ class SelectStatementVisitor: Visitor() {
             val condLocal = Predicate<Column> {col: Column ->
                 col.identifier == expressionStringPair.key
             }
-            condProjection = if(condProjection == null) {
-                condLocal
-            } else {
-                condProjection.or(condLocal)
-            }
+            condProjection = condProjection?.or(condLocal) ?: condLocal
         }
         result = if (condProjection != null) result.projection(condProjection) else result.projection { true }
+        result = Relation(result.columns.map { column ->
+            Column(node.selectExprList.firstOrNull { column.identifier == it.key }?.value ?: column.name)
+        }.toTypedArray(),
+        result.rows)
+
         relation = result
 
     }
@@ -91,8 +92,9 @@ class SelectStatementVisitor: Visitor() {
 
         node.table.accept(this)
         stack.pop()
-        val table = Engine[node.table] ?: throw RuntimeException("ERROR 20001: No such table")
-        table.alias = if (node.alias != null) node.alias else node.table.idText
+        val table = Engine[node.table]?.getRelation(node.alias ?: node.table.idText) ?: throw RuntimeException("ERROR 20001: No such table ${node.table}")
+//        table.alias = node.alias ?: node.table.idText
+        selectedRelation[table.alias] = table
         stack.push(table)
         parentNode.addChild(rootNode)
         rootNode = parentNode

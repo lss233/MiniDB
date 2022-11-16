@@ -2,11 +2,13 @@ package com.lss233.minidb.engine
 
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.utils.ConsoleTableBuilder
+import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.primary.Identifier
 import java.util.*
 import java.util.function.BiPredicate
 import java.util.function.Predicate
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 /**
  * 关系
@@ -15,6 +17,14 @@ import kotlin.collections.ArrayList
  */
 open class Relation(val columns: Array<Column>, val rows: Array<Array<Any>>) {
     var alias: String = UUID.randomUUID().toString()
+        set(value) {
+            for(col in columns) {
+                if(col.identifier.parent == null) {
+                    col.identifier.parent = Identifier(col.identifier.parent?.parent, value)
+                }
+            }
+            field = value
+        }
     val tuples: Array<NTuple>;
     init {
         tuples = rows.map { cols -> run {
@@ -51,7 +61,6 @@ open class Relation(val columns: Array<Column>, val rows: Array<Array<Any>>) {
      */
     infix fun projection(cond: Predicate<Column>): Relation =
          projection(columns.filter { i -> cond.test(i)}.toTypedArray());
-
 
     fun conditionalJoin(relation: Relation, condition: Predicate<NTuple>) : Relation {
         val columns = columns.map { i -> Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
