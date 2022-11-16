@@ -112,6 +112,15 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
 
     }
 
+
+    fun union(relation: Relation): Relation {
+        if(relation.columns.size != columns.size)
+            throw RuntimeException("每一个 UNION 查询必须有相同的字段个数")
+        val columns = this.columns
+        val rows = this.rows + relation.rows
+        return Relation(columns.toMutableList(), rows.toMutableList())
+    }
+
     override fun toString(): String =
         ConsoleTableBuilder()
             .withHeaders(*columns.map{ i -> i.getFullName() }.toTypedArray())
