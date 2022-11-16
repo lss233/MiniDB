@@ -3,8 +3,7 @@ package com.lss233.minidb.networking.packets
 import io.netty.buffer.ByteBuf
 import java.nio.charset.StandardCharsets
 
-class RowDescription: OutgoingPacket {
-    val rowData = ArrayList<RowData>()
+class RowDescription(val rowData: Array<RowData>): OutgoingPacket {
     override fun write(buf: ByteBuf): OutgoingPacket {
         buf.writeShort(rowData.size)
         for (data in rowData) {
@@ -23,12 +22,13 @@ class RowDescription: OutgoingPacket {
 
         fun write(buf: ByteBuf): RowData {
             buf.writeCharSequence(name, StandardCharsets.UTF_8)
+            buf.writeByte(0)
             buf.writeInt(objectId)
             buf.writeShort(attributeNumber.toInt())
-            buf.writeInt(dataType!!)
-            buf.writeShort(typeSize!!.toInt())
-            buf.writeInt(typeModifier!!)
-            buf.writeShort(formatCode!!.toInt())
+            buf.writeInt(dataType ?: 0)
+            buf.writeShort((typeSize?: 0).toInt())
+            buf.writeInt(typeModifier?: 0)
+            buf.writeShort((formatCode?: 0).toInt())
             return this
         }
     }
