@@ -64,7 +64,16 @@ class NTuple : ArrayList<Any>() {
     companion object {
         fun from(vararg items: Any): NTuple {
             val tuple = NTuple();
-            tuple.addAll(items)
+            for(item in items) {
+                tuple.add(item)
+            }
+            return tuple
+        }
+        fun from(vararg items: Cell<*>): NTuple {
+            val tuple = NTuple();
+            for (item in items) {
+                tuple.add(item)
+            }
             return tuple
         }
     }

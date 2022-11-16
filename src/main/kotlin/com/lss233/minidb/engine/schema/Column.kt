@@ -42,4 +42,8 @@ class Column {
     fun getFullName(): String {
         return identifier.idTextWithParent;
     }
+
+    fun defaultValue(): Any? {
+        return null
+    }
 }
