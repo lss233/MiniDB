@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
 import miniDB.parser.ast.stmt.dal.DALSetStatement
-import miniDB.parser.ast.stmt.dml.DMLSelectStatement
+import miniDB.parser.ast.stmt.dml.DMLQueryStatement
 import miniDB.parser.recognizer.SQLParserDelegate
 import java.sql.SQLSyntaxErrorException
 
@@ -18,7 +18,6 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
     private val REGEX_STMT_SET = Regex("set (.+) to (.+)");
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: Query?) {
         try {
-
             val queryStrings = msg?.queryString?.split(";")
             for(queryString in queryStrings!!) {
                 // 先把查询语句转化为 MySQL 风格
@@ -36,9 +35,9 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
 
                 // 分析解析后的 SQL 语句，作出不同的反应
                 when(ast) {
-                    is DMLSelectStatement -> {
-                        val relation: Relation? = if(queryStr == "SELECT version()") {
-                            Relation(arrayOf(Column("version")), arrayOf(arrayOf("1.0.0")))
+                    is DMLQueryStatement -> {
+                        val relation: Relation? = if(queryStr == "select version()") {
+                            Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0")))
                         } else {
                             val visitor = SelectStatementVisitor()
                             ast.accept(visitor)
@@ -82,16 +81,12 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                     }
                 }
             }
+            ctx?.writeAndFlush(ReadyForQuery())?.sync()
         } catch (e: SQLSyntaxErrorException) {
             System.err.println(" Q(Error): ${msg?.queryString}")
-            e.printStackTrace()
-            // 告诉客户端你发的东西有问题
-            val err = ErrorResponse()
-            err.message = e.message!!
-            ctx?.writeAndFlush(err)?.sync()
+            exceptionCaught(ctx, e)
         }
         // 等待下一条语句
-        ctx?.writeAndFlush(ReadyForQuery())?.sync()
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext?, cause: Throwable?) {
@@ -100,6 +95,15 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
         // 告诉客户端你发的东西有问题
         val err = ErrorResponse()
         err.message = cause?.message.toString()
+        err.file = cause?.stackTrace?.get(0)?.fileName
+        err.line = cause?.stackTrace?.get(0)?.lineNumber
+        err.routine = cause?.stackTrace?.get(0)?.methodName
+        if(cause is SQLSyntaxErrorException) {
+            err.sqlStateCode = cause.sqlState ?: "50000"
+            val positionRegex = "curIndex=\\d+".toRegex()
+            err.position =  positionRegex.find(cause.message ?: "curIndex=0")?.value ?: "1"
+        }
         ctx?.writeAndFlush(err)?.sync()
+        ctx?.writeAndFlush(ReadyForQuery())?.sync()
     }
 }
