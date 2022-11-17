@@ -77,12 +77,31 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
         }
         return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
     }
+
+    fun innerJoin(relation: Relation, condition: Predicate<NTuple>): Relation {
+        val columns = columns.map { i -> Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
+        columns.addAll(relation.columns.map { i -> Column(Identifier(Identifier(null, relation.alias), i.name)) })
+        val rows = ArrayList<NTuple>()
+        for(leftRow in tuples) {
+            for(rightRow in relation.tuples) {
+                val tuple = NTuple()
+                tuple.columns = arrayListOf(*columns.toTypedArray())
+                tuple.addAll(leftRow)
+                tuple.addAll(rightRow)
+                if(condition.test(tuple)) {
+                    rows.add(tuple)
+                }
+            }
+        }
+        return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
+    }
     fun outerJoin(relation: Relation, leftJoin: Boolean, condition: Predicate<NTuple>): Relation {
         val columns = columns.map { i -> Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
         columns.addAll(relation.columns.map { i -> Column(Identifier(Identifier(null, relation.alias), i.name)) })
         val rows = ArrayList<NTuple>()
         if(leftJoin) {
             for(leftRow in tuples) {
+                var linked = false
                 for(rightRow in relation.tuples) {
                     val tuple = NTuple()
                     tuple.columns = arrayListOf(*columns.toTypedArray())
@@ -90,11 +109,19 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
                     tuple.addAll(rightRow)
                     if(condition.test(tuple)) {
                         rows.add(tuple)
+                        linked = true
                     }
+                }
+                if(!linked) {
+                    val tuple = NTuple()
+                    tuple.columns = arrayListOf(*columns.toTypedArray())
+                    tuple.addAll(leftRow)
+                    tuple.addAll(relation.columns.map { Cell(it, null) })
                 }
             }
         } else {
             for(rightRow in relation.tuples) {
+                var linked = false
                 for(leftRow in tuples) {
                     val tuple = NTuple()
                     tuple.columns = arrayListOf(*columns.toTypedArray())
@@ -103,6 +130,12 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
                     if(condition.test(tuple)) {
                         rows.add(tuple)
                     }
+                }
+                if(!linked) {
+                    val tuple = NTuple()
+                    tuple.columns = arrayListOf(*columns.toTypedArray())
+                    tuple.addAll(columns.map { Cell(it, null) })
+                    tuple.addAll(rightRow)
                 }
             }
         }
