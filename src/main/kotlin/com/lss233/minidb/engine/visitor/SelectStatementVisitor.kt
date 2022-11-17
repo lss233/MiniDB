@@ -6,8 +6,10 @@ import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
 import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
+import miniDB.parser.ast.expression.logical.LogicalOrExpression
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
+import miniDB.parser.ast.expression.primary.literal.LiteralString
 import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.fragment.tableref.TableRefFactor
 import miniDB.parser.ast.fragment.tableref.TableReferences
@@ -41,15 +43,15 @@ class SelectStatementVisitor: Visitor() {
     }
     override fun visit(node: DMLSelectStatement) {
         var result = constantRelation.clone()
-        if(node.tables != null) {
+        node.tables?.let { tables -> run {
             node.tables.accept(this)
             result = stack.pop() as Relation
-            if(node.where != null) {
-                node.where.accept(this)
-                val cond = stack.pop() as Predicate<NTuple>
-                result = result.select(cond)
-            }
-        }
+        } }
+        node.where?.let { where -> run {
+            where.accept(this)
+            val cond = stack.pop() as Predicate<NTuple>
+            result = result.select(cond)
+        } }
 
 
         var condProjection : Predicate<Column>? = null
@@ -117,6 +119,25 @@ class SelectStatementVisitor: Visitor() {
         rootNode = parentNode
     }
 
+    override fun visit(node: LogicalOrExpression) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Expression(operator='${node.operator}')")
+
+        var cond: Predicate<NTuple>? = null
+        for (i in 0 until node.arity) {
+            node.getOperand(i).accept(this)
+            val oprand = stack.pop() as Predicate<NTuple>
+            cond = if(cond == null) {
+                oprand
+            } else {
+                cond.or(oprand)
+            }
+        }
+        stack.push(cond)
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+
     override fun visit(node: ComparisionEqualsExpression) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("Expression(operator='${node.operator}', leftCombine=${node.isLeftCombine})")
@@ -173,6 +194,13 @@ class SelectStatementVisitor: Visitor() {
     override fun visit(node: LiteralNumber) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("LiteralNumber(${node.number})")
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+
+    override fun visit(node: LiteralString) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("LiteralString('${node.unescapedString}')")
         parentNode.addChild(rootNode)
         rootNode = parentNode
     }
