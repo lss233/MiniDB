@@ -23,8 +23,11 @@ fun main(args: Array<String>) {
 
     Engine.createDatabase("minidb")
 
-    println("SELECT n.nspname, c.relname, c.relkind FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind = ANY ('{r,v,m}'::char[])  ORDER BY n.nspname, c.relname")
-    val ast = SQLParser.parse("SELECT n.nspname, c.relname, c.relkind FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind = ANY ('{r,v,m}'::char[])  ORDER BY n.nspname, c.relname")
+    val sqlStr = "CREATE TABLE \"public\".\"tab\" (\n" +
+            "  \"col\" varchar(255)\n" +
+            ")"
+    println(sqlStr)
+    val ast = SQLParser.parse(sqlStr)
     val visitorXX = SelectStatementVisitor()
 
     val elapsed = measureNanoTime  {
@@ -39,6 +42,6 @@ fun main(args: Array<String>) {
 
     val server = NettyServer()
 
-    // server.start()
+     server.start()
 
 }

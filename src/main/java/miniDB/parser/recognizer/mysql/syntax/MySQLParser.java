@@ -65,7 +65,7 @@ public abstract class MySQLParser {
         if (lexer.token() == null) {
             lexer.nextToken();
         }
-        Identifier id;
+        Identifier id = null;
         switch (lexer.token()) {
             case OP_ASTERISK:
                 lexer.nextToken();
@@ -103,7 +103,7 @@ public abstract class MySQLParser {
                 case LITERAL_NUM_PURE_DIGIT:
                     throw err("expect identifier");
                 default:
-                    id = new Identifier(null, lexer.stringValue(), lexer.stringValueUppercase());
+                    id = new Identifier(id, lexer.stringValue(), lexer.stringValueUppercase());
                     id.setCacheEvalRst(cacheEvalRst);
                     lexer.nextToken();
                     break;

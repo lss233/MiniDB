@@ -2098,6 +2098,7 @@ public class MySQLDDLParser extends MySQLParser {
                     match(MySQLToken.PUNC_RIGHT_PAREN);
                     stmt.addCheck(expr);
                     break;
+                case LITERAL_CHARS:
                 case IDENTIFIER:
                     Identifier columnName = identifier();
                     ColumnDefinition columnDef = columnDefinition();
