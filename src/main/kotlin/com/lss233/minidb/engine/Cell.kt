@@ -3,6 +3,7 @@ package com.lss233.minidb.engine
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
+import java.lang.IllegalArgumentException
 
 /**
  * 行式存储结构中的单体数据(单元格数据)
@@ -16,7 +17,7 @@ class Cell<T> constructor(var column: Column, var value: T) {
             return value.toString() == other.unescapedString
         }
         if (other is LiteralNumber) {
-            return value.toString().toDoubleOrNull() == other.number
+            return value.toString().toDoubleOrNull() == other.number.toDouble()
         }
         return if (other is Cell<*>)
             value == other.value
@@ -32,5 +33,20 @@ class Cell<T> constructor(var column: Column, var value: T) {
         var result = column.hashCode()
         result = 31 * result + (value?.hashCode() ?: 0)
         return result
+    }
+    operator fun compareTo(other: Any?): Int {
+        if(value !is Number) {
+            throw IllegalArgumentException("Value cannot be compared.")
+        }
+        if(other is Cell<*>) {
+            if(other.value !is Number) {
+                throw IllegalArgumentException("Target value cannot be compared.")
+            }
+            return (value as Number).toDouble().compareTo((other.value as Number).toDouble())
+        }
+        if(other is LiteralNumber) {
+            return (value as Number).toDouble().compareTo(other.number.toDouble())
+        }
+        throw IllegalArgumentException("Unsupported type for $other to compare.")
     }
 }

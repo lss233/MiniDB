@@ -1,24 +1,27 @@
 package com.lss233.minidb.engine.visitor
 
+import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
 import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
+import miniDB.parser.ast.expression.comparison.ComparisionGreaterThanExpression
 import miniDB.parser.ast.expression.logical.LogicalOrExpression
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
+import miniDB.parser.ast.fragment.tableref.InnerJoin
 import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.fragment.tableref.TableRefFactor
 import miniDB.parser.ast.fragment.tableref.TableReferences
 import miniDB.parser.ast.stmt.dml.DMLSelectStatement
 import miniDB.parser.ast.stmt.dml.DMLSelectUnionStatement
 import miniDB.parser.visitor.Visitor
-import java.lang.RuntimeException
 import java.util.*
 import java.util.function.Predicate
+import kotlin.RuntimeException
 
 
 class SelectStatementVisitor: Visitor() {
@@ -79,6 +82,27 @@ class SelectStatementVisitor: Visitor() {
         for (tableReference in node.tableReferenceList) {
             tableReference.accept(this)
         }
+
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+    override fun visit(node: InnerJoin) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("InnerJoin")
+
+        node.leftTableRef.accept(this)
+        val leftTable = stack.pop() as Relation
+        selectedRelation[leftTable.alias] = leftTable
+        node.rightTableRef.accept(this)
+        val rightTable = stack.pop() as Relation
+        selectedRelation[rightTable.alias] = rightTable
+
+//        stack.push(node)  // Pass innerJoin parameters.
+        node.onCond.accept(this)
+        val cond = stack.pop() as Predicate<NTuple>
+
+        val result = leftTable.innerJoin(rightTable, cond)
+        stack.push(result)
 
         parentNode.addChild(rootNode)
         rootNode = parentNode
@@ -171,6 +195,55 @@ class SelectStatementVisitor: Visitor() {
                 rightIdentifier
             }
             leftValue == rightValue
+        })
+
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+    override fun visit(node: ComparisionGreaterThanExpression) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Expression(operator='${node.operator}', leftCombine=${node.isLeftCombine})")
+
+        // 为了保证访问一致性，都得 visit
+        node.leftOprand.accept(this)
+        val leftIdentifier = when(node.leftOprand) {
+            is Identifier ->
+                stack.pop() as String
+            else ->
+                node.leftOprand
+        }
+
+        node.rightOprand.accept(this)
+        val rightIdentifier = when(node.rightOprand) {
+            is Identifier ->
+                stack.pop() as String
+            else ->
+                node.rightOprand
+        }
+
+        stack.push(Predicate<NTuple> { t: NTuple ->
+            val leftValue = if(leftIdentifier is String) {
+                (t[node.leftOprand as Identifier] as Cell<*>).value
+            } else {
+                leftIdentifier
+            }
+            val rightValue = if(rightIdentifier is String) {
+                (t[node.rightOprand as Identifier] as Cell<*>).value
+            } else {
+                rightIdentifier
+            }
+
+            if(leftValue is LiteralNumber && rightValue is LiteralNumber) {
+                leftValue > rightValue
+            } else if(leftValue is LiteralNumber && rightValue is Cell<*>) {
+                leftValue > rightValue
+            } else if(leftValue is Cell<*> && rightValue is LiteralNumber) {
+                leftValue > rightValue
+            } else if(leftValue is Cell<*> && rightValue is Cell<*>) {
+                leftValue > rightValue
+            } else {
+                throw RuntimeException("Expression cannot be compared.")
+            }
         })
 
         parentNode.addChild(rootNode)

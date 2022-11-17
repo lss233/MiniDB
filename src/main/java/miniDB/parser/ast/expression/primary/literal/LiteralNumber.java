@@ -16,7 +16,9 @@
  */
 package miniDB.parser.ast.expression.primary.literal;
 
+import com.lss233.minidb.engine.Cell;
 import miniDB.parser.visitor.Visitor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -25,7 +27,7 @@ import java.util.Map;
  * 
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
-public class LiteralNumber extends Literal {
+public class LiteralNumber extends Literal implements Comparable<Object> {
     private Number number;
 
     public LiteralNumber(Number number) {
@@ -60,5 +62,12 @@ public class LiteralNumber extends Literal {
         } else {
             return false;
         }
+    }
+    @Override
+    public int compareTo(@NotNull Object o) {
+        if(o instanceof LiteralNumber) {
+            return Double.compare(this.number.doubleValue(), ((LiteralNumber) o).number.doubleValue());
+        }
+        return 0;
     }
 }
