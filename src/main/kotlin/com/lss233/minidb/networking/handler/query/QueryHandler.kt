@@ -36,8 +36,11 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                             Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0")))
                         } else {
                             val visitor = SelectStatementVisitor()
-                            ast.accept(visitor)
-                            TraditionalTreePrinter().print(visitor.rootNode)
+                            try {
+                                ast.accept(visitor)
+                            } finally {
+                                TraditionalTreePrinter().print(visitor.rootNode)
+                            }
                             visitor.relation
                         }
 
@@ -69,11 +72,11 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                                 pair.value.evaluation(emptyMap()).toString()
 
                             // 告知客户端设置成功
-                            ctx?.writeAndFlush(CommandComplete("SET"))?.sync()
                             ctx?.writeAndFlush(ParameterStatus(
                                 (pair.key as SysVarPrimary).varText,
                                 session.properties[(pair.key as SysVarPrimary).varText]!!
                             ))?.sync()
+                            ctx?.writeAndFlush(CommandComplete("SET"))?.sync()
                         }
                     }
                 }
