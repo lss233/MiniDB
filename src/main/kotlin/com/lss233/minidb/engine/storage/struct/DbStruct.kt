@@ -29,7 +29,7 @@ class DbStruct {
         // TODO 设计问题  以后要改成真正的获取最大id而不是自增
         @JvmStatic
         fun getTableMaxId(dbName: String, tableName: String): Int {
-            return dbs[dbName]!![tableName]!!.recordNum!! + 1
+            return dbs[dbName]!![tableName]!!.recordNum + 1
         }
     }
 
