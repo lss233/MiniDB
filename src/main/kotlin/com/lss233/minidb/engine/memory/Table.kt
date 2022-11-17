@@ -15,14 +15,19 @@ class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<
     }
     fun insert(row: NTuple) {
         val tuple = NTuple()
+        val arr = ArrayList<Any>()
+
         for(column in columns) {
             if(row.columns.contains(column)) {
                 tuple.add(row[column])
+                arr.add((row[column] as Cell<*>).value!!)
             } else {
                 tuple.add(Cell(column, column.defaultValue() ?: throw RuntimeException("Unable inserting row for table `$name`, no default value for column `${column.name}`.")))
+                arr.add(column.defaultValue()!!)
             }
         }
         tuples.add(tuple)
+        rows.add(arr.toArray())
     }
 
 }
