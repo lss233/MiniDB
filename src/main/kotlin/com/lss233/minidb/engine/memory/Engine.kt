@@ -8,52 +8,53 @@ import java.util.*
 import kotlin.collections.HashMap
 
 object Engine {
-    val databases = HashMap<String, Database>()
+    private val databases = HashMap<String, Database>()
     operator fun get(identifier: Identifier) : Table? {
-        var identifier_ = identifier
-        val stack = Stack<Identifier>();
-        stack.push(identifier_)
-        while(identifier_.parent != null) {
-            identifier_ = identifier_.parent
-            stack.push(identifier_)
-        }
-        val db =  if(databases.containsKey(stack.peek().idText)) {
-            databases[stack.pop().idText]
+        val db = databases["minidb"]!!
+        val schema = if(identifier.parent == null) {
+            db["pg_catalog"]
         } else {
-            databases["pg_catalog"]
-        }
-        return db?.tables?.get(stack.pop().idText)
+            db[identifier.parent.idText]
+        } ?: throw RuntimeException("Schema ${identifier.parent} does not exist.")
+        return schema[identifier.idText]
     }
-    operator fun get(db: Database): Database {
-        if(!databases.containsValue(db)) {
-            throw RuntimeException("Database ${db.name} does not exist.")
+
+    fun createDatabase(name: String, dba: Int = 10, encoding: Int = 1, locProvider: Char = 'c', allowConn: Boolean = true, connLimit: Int = -1): Database {
+        if(databases.containsKey(name)) {
+            throw RuntimeException("Database $name already exists.")
         }
+        val db = Database(name, dba, encoding, locProvider, allowConn, connLimit)
+
+        databases[name] = db
+        // Assign system schema
+        db.initSchema()
+
+        // Create db schema
+        db.createSchema("public")
+
+        registerDatabase(db)
         return db
     }
 
-    fun createDatabase(db: Database): Database {
-        val dbName = db.name
-        if(databases.containsKey(dbName)) {
-            throw RuntimeException("Database $dbName already exists.")
-        }
-        databases[dbName] = db
-
-        databases["pg_catalog"]!!.tables["pg_database"]!!.insert(
-            NTuple.from(
-                Cell(Column("oid"), "3"),
-                Cell(Column("datname"), db.name),
-                Cell(Column("datdba"), "1"),
-                Cell(Column("encoding"), "1"),
-                Cell(Column("datlocprovider"), 'c'),
-                Cell(Column("datistemplate"), "true"),
-                Cell(Column("datallowconn"), "true"),
-                Cell(Column("datconnlimit"), -1),
-                Cell(Column("dattablespace"), "1"),
-                Cell(Column("datcollate"), "1"),
-                Cell(Column("datctype"), "1"),
-                Cell(Column("datacl"), "[]")
+    private fun registerDatabase(db: Database) {
+        for(item in databases.values) {
+            item["pg_catalog"]["pg_database"].insert(
+                NTuple.from(
+                    Cell(Column("oid"), "3"),
+                    Cell(Column("datname"), db.name),
+                    Cell(Column("datdba"), "1"),
+                    Cell(Column("encoding"), "1"),
+                    Cell(Column("datlocprovider"), 'c'),
+                    Cell(Column("datistemplate"), "true"),
+                    Cell(Column("datallowconn"), "true"),
+                    Cell(Column("datconnlimit"), -1),
+                    Cell(Column("dattablespace"), "1"),
+                    Cell(Column("datcollate"), "1"),
+                    Cell(Column("datctype"), "1"),
+                    Cell(Column("datacl"), "[]")
+                )
             )
-        )
-        return db
+        }
     }
+
 }
