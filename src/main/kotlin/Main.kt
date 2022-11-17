@@ -1,6 +1,8 @@
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Database
 import com.lss233.minidb.engine.memory.Engine
+import com.lss233.minidb.engine.memory.Schema
 import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
@@ -21,32 +23,22 @@ fun main(args: Array<String>) {
 
     Engine.createDatabase("minidb")
 
-    Engine.createDatabase(pgCatalog)
-//        .createTable(pgDatabaseTable)
-        .createTable(pgNamespaceTable)
-        .createTable(pgTablespace)
-        .createTable(pgSettingsTable)
-
-//    println("pg_database")
-//    println(pg_sys.tables["pg_database"])
-//    println("pg_tablespace")
-//    println(pg_sys.tables["pg_tablespace"])
-    println("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1")
-    val ast = SQLParserDelegate.parse("SELECT d.oid, d.datname AS databasename, d.datacl, d.datistemplate, d.datallowconn, pg_get_userbyid(d.datdba) AS databaseowner, d.datcollate, d.datctype, shobj_description(d.oid, 'pg_database') AS description, d.datconnlimit, t.spcname, d.encoding, pg_encoding_to_char(d.encoding) AS encodingname FROM pg_database d LEFT JOIN pg_tablespace t ON d.dattablespace = t.oid WHERE 1=1") as DMLSelectStatement
+    println("SELECT n.nspname, c.relname, c.relkind FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind = ANY ('{r,v,m}'::char[])  ORDER BY n.nspname, c.relname")
+    val ast = SQLParser.parse("SELECT n.nspname, c.relname, c.relkind FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind = ANY ('{r,v,m}'::char[])  ORDER BY n.nspname, c.relname")
     val visitorXX = SelectStatementVisitor()
 
     val elapsed = measureNanoTime  {
-        ast.accept(visitorXX)
-        TraditionalTreePrinter().print(visitorXX.rootNode)
+        try {
+            ast.accept(visitorXX)
+        } finally {
+            TraditionalTreePrinter().print(visitorXX.rootNode)
+        }
         println(visitorXX.relation)
     }
     println("Time elapsed $elapsed nano seconds")
 
-    val astt = SQLParserDelegate.parse("SELECT oid FROM pg_database UNION SELECT oid FROM pg_namespace")
-
-//    println(subset)
     val server = NettyServer()
 
-    server.start()
+    // server.start()
 
 }

@@ -2,10 +2,12 @@ package com.lss233.minidb.networking.handler.query
 
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
+import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.*
+import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
@@ -15,32 +17,27 @@ import miniDB.parser.recognizer.SQLParserDelegate
 import java.sql.SQLSyntaxErrorException
 
 class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Query>() {
-    private val REGEX_STMT_SET = Regex("set (.+) to (.+)");
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: Query?) {
         try {
             val queryStrings = msg?.queryString?.split(";")
             for(queryString in queryStrings!!) {
-                // 先把查询语句转化为 MySQL 风格
-                val queryStr = if(REGEX_STMT_SET.matches(queryString.lowercase())) {
-                    queryString.lowercase().replace(REGEX_STMT_SET, "SET $1=$2")
-                } else {
-                    queryString
-                }
-                if(queryStr.isBlank()) {
+                if(queryString.isBlank()) {
                     continue
                 }
                 // 交给词法解析器
-                val ast = SQLParserDelegate.parse(queryStr)
-                println("  Q(${ast.javaClass.simpleName}: $queryStr")
+                println("  Q: $queryString")
+                val ast = SQLParser.parse(queryString)
+                println("  Q(${ast.javaClass.simpleName}): $queryString")
 
                 // 分析解析后的 SQL 语句，作出不同的反应
                 when(ast) {
                     is DMLQueryStatement -> {
-                        val relation: Relation? = if(queryStr == "select version()") {
+                        val relation: Relation? = if(queryString == "select version()") {
                             Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0")))
                         } else {
                             val visitor = SelectStatementVisitor()
                             ast.accept(visitor)
+                            TraditionalTreePrinter().print(visitor.rootNode)
                             visitor.relation
                         }
 
