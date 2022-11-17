@@ -31,11 +31,14 @@ class PostgreSQLDecoder(private val session: Session) : ByteToMessageDecoder() {
             val length = len - `in`.readerIndex()
             println("-> type ${mType.name}(${mType.type.toInt().toChar()}) len $len")
             if (`in`.readableBytes() < length) {
+                println("   Uncompleted message, try again.")
+                `in`.resetReaderIndex()
                 return
             }
 
             val packet: IncomingPacket? = parse(mType, `in`);
             packet?.let { out.add(it) }
+//
             `in`.readerIndex(`in`.writerIndex())
         }
     }
