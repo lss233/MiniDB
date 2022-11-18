@@ -3,20 +3,30 @@ package com.lss233.minidb.engine.memory
 import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.networking.Session
 import miniDB.parser.ast.expression.primary.Identifier
 import java.util.*
+import javax.xml.crypto.Data
 import kotlin.collections.HashMap
 
 object Engine {
     private val databases = HashMap<String, Database>()
-    operator fun get(identifier: Identifier) : Table? {
-        val db = databases["minidb"]!!
+    val session = ThreadLocal<Session>()
+    operator fun get(identifier: Identifier) : Table {
+        val db = databases[session.get()?.properties?.get("database") ?: "minidb"] ?: throw RuntimeException("Database not exists.")
         val schema = if(identifier.parent == null) {
             db["pg_catalog"]
         } else {
             db[identifier.parent.idText]
-        } ?: throw RuntimeException("Schema ${identifier.parent} does not exist.")
+        }
         return schema[identifier.idText]
+    }
+
+    operator fun get(dbName: String): Database {
+        if(!databases.containsKey(dbName)) {
+            throw RuntimeException("Database $dbName does not exist.")
+        }
+        return databases[dbName]!!
     }
 
     fun createDatabase(name: String, dba: Int = 10, encoding: Int = 1, locProvider: Char = 'c', allowConn: Boolean = true, connLimit: Int = -1): Database {
