@@ -92,10 +92,11 @@ class SelectStatementVisitor: Visitor() {
 
         node.leftTableRef.accept(this)
         val leftTable = stack.pop() as Relation
-        selectedRelation[leftTable.alias] = leftTable
+        leftTable.alias?.let { run { selectedRelation[it] = leftTable }}
+
         node.rightTableRef.accept(this)
         val rightTable = stack.pop() as Relation
-        selectedRelation[rightTable.alias] = rightTable
+        rightTable.alias?.let { run { selectedRelation[it] = rightTable }}
 
 //        stack.push(node)  // Pass innerJoin parameters.
         node.onCond.accept(this)
@@ -113,16 +114,22 @@ class SelectStatementVisitor: Visitor() {
 
         node.leftTableRef.accept(this)
         val leftTable = stack.pop() as Relation
-        selectedRelation[leftTable.alias] = leftTable
+        leftTable.alias?.let { run { selectedRelation[it] = leftTable }}
+
         node.rightTableRef.accept(this)
         val rightTable = stack.pop() as Relation
-        selectedRelation[rightTable.alias] = rightTable
+        rightTable.alias?.let { run { selectedRelation[it] = rightTable }}
+
 
         stack.push(node)  // Pass outerJoin parameters.
         node.onCond.accept(this)
         val cond = stack.pop() as Predicate<NTuple>
 
         val result = leftTable.outerJoin(rightTable, node.isLeftJoin, cond)
+        node.alias?.let {
+            run {
+            selectedRelation[it.idText] = result
+        } }
         stack.push(result)
 
         parentNode.addChild(rootNode)
@@ -135,9 +142,9 @@ class SelectStatementVisitor: Visitor() {
 
         node.table.accept(this)
         stack.pop()
-        val table = Engine[node.table]?.getRelation(node.alias ?: node.table.idText) ?: throw RuntimeException("ERROR 20001: No such table ${node.table}")
+        val table = Engine[node.table].getRelation(node.alias ?: node.table.idText) ?: throw RuntimeException("ERROR 20001: No such table ${node.table}")
 //        table.alias = node.alias ?: node.table.idText
-        selectedRelation[table.alias] = table
+        table.alias?.let { run { selectedRelation[it] = table }}
         stack.push(table)
         parentNode.addChild(rootNode)
         rootNode = parentNode

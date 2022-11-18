@@ -17,6 +17,7 @@
 package miniDB.parser.ast.fragment.tableref;
 
 import miniDB.parser.ast.expression.Expression;
+import miniDB.parser.ast.expression.primary.Identifier;
 import miniDB.parser.visitor.Visitor;
 
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class OuterJoin implements TableReference {
     private final TableReference rightTableRef;
     private final Expression onCond;
     private final List<String> using;
+
+    private Identifier alias = null;
 
     private OuterJoin(boolean isLeftJoin, TableReference leftTableRef, TableReference rightTableRef,
             Expression onCond, List<String> using) {
@@ -108,4 +111,11 @@ public class OuterJoin implements TableReference {
         visitor.visit(this);
     }
 
+    public void setAlias(Identifier alias) {
+        this.alias = alias;
+    }
+
+    public Identifier getAlias() {
+        return alias;
+    }
 }

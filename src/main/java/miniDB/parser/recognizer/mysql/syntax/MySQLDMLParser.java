@@ -294,6 +294,7 @@ public abstract class MySQLDMLParser extends MySQLParser {
                     }
                     match(KW_JOIN);
                     temp = tableReference();
+                    Identifier alias = null;
                     switch (lexer.token()) {
                         case KW_ON:
                             lexer.nextToken();
@@ -305,6 +306,38 @@ public abstract class MySQLDMLParser extends MySQLParser {
                             match(PUNC_LEFT_PAREN);
                             using = idNameList();
                             ref = new OuterJoin(isLeft, ref, temp, using);
+                            break;
+                        case IDENTIFIER:
+                            alias = identifier();
+                            switch (lexer.token()) {
+                                case KW_ON:
+                                    lexer.nextToken();
+                                    on = exprParser.expression();
+                                    ref = new OuterJoin(isLeft, ref, temp, on);
+                                    break;
+                                case KW_USING:
+                                    lexer.nextToken();
+                                    match(PUNC_LEFT_PAREN);
+                                    using = idNameList();
+                                    ref = new OuterJoin(isLeft, ref, temp, using);
+                                    break;
+                                case IDENTIFIER:
+                                    lexer.nextToken();
+                                    alias = identifier();
+
+                                    break;
+                                default:
+                                    Object condition = temp.removeLastConditionElement();
+                                    if (condition instanceof Expression) {
+                                        ref = new OuterJoin(isLeft, ref, temp, (Expression) condition);
+                                    } else if (condition instanceof List) {
+                                        ref = new OuterJoin(isLeft, ref, temp, (List<String>) condition);
+                                    } else {
+                                        throw err("conditionExpr cannot be null for outer join");
+                                    }
+                                    break;
+                            }
+                            ((OuterJoin)ref).setAlias(alias);
                             break;
                         default:
                             Object condition = temp.removeLastConditionElement();

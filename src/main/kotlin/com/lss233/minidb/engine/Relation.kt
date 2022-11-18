@@ -16,7 +16,7 @@ import kotlin.collections.HashSet
  * Or many list of Domains
  */
 open class Relation(val columns: MutableList<Column>, val rows: MutableList<Array<Any>>) {
-    var alias: String = UUID.randomUUID().toString()
+    var alias: String? = null
         set(value) {
             for(col in columns) {
                 if(col.identifier.parent == null) {
@@ -96,8 +96,8 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
         return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
     }
     fun outerJoin(relation: Relation, leftJoin: Boolean, condition: Predicate<NTuple>): Relation {
-        val columns = columns.map { i -> Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
-        columns.addAll(relation.columns.map { i -> Column(Identifier(Identifier(null, relation.alias), i.name)) })
+        val columns = columns.map { i -> if (alias == null) i else Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
+        columns.addAll(relation.columns.map { i -> if (relation.alias == null) i else Column(Identifier(Identifier(null, relation.alias), i.name)) })
         val rows = ArrayList<NTuple>()
         if(leftJoin) {
             for(leftRow in tuples) {
@@ -117,6 +117,7 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
                     tuple.columns = arrayListOf(*columns.toTypedArray())
                     tuple.addAll(leftRow)
                     tuple.addAll(relation.columns.map { Cell(it, null) })
+                    rows.add(tuple)
                 }
             }
         } else {
