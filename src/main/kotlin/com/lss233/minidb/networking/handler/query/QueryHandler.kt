@@ -3,6 +3,7 @@ package com.lss233.minidb.networking.handler.query
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.SQLParser
+import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.Session
@@ -19,6 +20,7 @@ import java.sql.SQLSyntaxErrorException
 class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Query>() {
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: Query?) {
         try {
+            Engine.session.set(session)
             val queryStrings = msg?.queryString?.split(";")
             for(queryString in queryStrings!!) {
                 if(queryString.isBlank()) {
@@ -32,7 +34,7 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                 // 分析解析后的 SQL 语句，作出不同的反应
                 when(ast) {
                     is DMLQueryStatement -> {
-                        val relation: Relation? = if(queryString == "select version()") {
+                        val relation: Relation? = if(queryString.lowercase() == "select version()") {
                             Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0")))
                         } else {
                             val visitor = SelectStatementVisitor()
@@ -81,12 +83,14 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                     }
                 }
             }
+            // 等待下一条语句
             ctx?.writeAndFlush(ReadyForQuery())?.sync()
         } catch (e: SQLSyntaxErrorException) {
             System.err.println(" Q(Error): ${msg?.queryString}")
             exceptionCaught(ctx, e)
+        } finally {
+            Engine.session.remove()
         }
-        // 等待下一条语句
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext?, cause: Throwable?) {
