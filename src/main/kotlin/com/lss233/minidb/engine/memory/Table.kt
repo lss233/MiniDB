@@ -13,6 +13,12 @@ class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<
         ret.alias = alias
         return ret
     }
+    fun insert(row: Array<Any>) {
+        if(row.size != columns.size) {
+            throw RuntimeException("Unable inserting row for table `$name`, incorrect row size and column size.")
+        }
+        this.rows.add(row)
+    }
     fun insert(row: NTuple) {
         val tuple = NTuple()
         val arr = ArrayList<Any>()
@@ -27,7 +33,7 @@ class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<
             }
         }
         tuples.add(tuple)
-        rows.add(arr.toArray())
+        insert(arr.toArray())
     }
 
 }
