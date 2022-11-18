@@ -38,7 +38,7 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                         val visitor = CreateTableStatementVisitor()
                         try {
                             ast.accept(visitor)
-                            Engine[session.properties["database"] ?: "minidb"].createTable(visitor.relation!!)
+                            Engine[session.properties["database"] ?: "minidb"].createTable(visitor.relation!!, visitor.tableIdentifier!!)
                         } finally {
                             TraditionalTreePrinter().print(visitor.rootNode)
                         }

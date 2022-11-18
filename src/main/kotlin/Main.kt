@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     val elapsed = measureNanoTime  {
         try {
             ast.accept(visitorXX)
-            Engine["minidb"].createTable(visitorXX.relation!!)
+            Engine["minidb"].createTable(visitorXX.relation!!, visitorXX.tableIdentifier!!)
         } finally {
             TraditionalTreePrinter().print(visitorXX.rootNode)
         }

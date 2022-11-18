@@ -14,9 +14,10 @@ class CreateTableStatementVisitor: Visitor() {
     private val stack = Stack<Any>()
     var rootNode = SimpleTreeNode("DDLCreateTableStatement")
     var relation: Table? = null
+    var tableIdentifier: Identifier? = null
     override fun visit(node: DDLCreateTableStatement) {
         node.table.accept(this)
-        val tableIdentifier = stack.pop() as Identifier
+        tableIdentifier = stack.pop() as Identifier
 
         val columns = node.colDefs.map {
             run {
@@ -24,7 +25,7 @@ class CreateTableStatementVisitor: Visitor() {
                 val columIdentifier = stack.pop() as Identifier
                 Column(columIdentifier, it.value)
         } }.toMutableList()
-        relation = Table(tableIdentifier.idText, columns, mutableListOf())
+        relation = Table(tableIdentifier!!.idText, columns, mutableListOf())
 
         stack.push(relation)
     }

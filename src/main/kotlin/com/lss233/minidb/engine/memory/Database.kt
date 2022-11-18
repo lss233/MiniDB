@@ -3,17 +3,20 @@ package com.lss233.minidb.engine.memory
 import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.schema.Column
+import miniDB.parser.ast.expression.primary.Identifier
 import kotlin.collections.HashMap
 
 class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int) {
-    var tables = HashMap<String, Table>();
     var schemas = HashMap<String, Schema>();
 
-    fun createTable(table: Table): Database {
-        if(tables.containsKey(table.name)) {
+    fun createTable(table: Table, identifier: Identifier): Database {
+        val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
+
+        if(schema.tables.containsKey(table.name)) {
             throw RuntimeException("Table ${table.name} already exists.")
         }
-        tables[table.name] = table
+
+        schema[table.name] = table
         // TODO insert table info
         this["pg_catalog"]["pg_class"].let {
             run {
@@ -21,9 +24,9 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
             } }
         return this
     }
-    operator fun set(tableName: String, table: Table) {
-        tables[tableName] = table
-    }
+//    operator fun set(tableName: String, table: Table) {
+//        tables[tableName] = table
+//    }
 
     operator fun get(schemaName: String): Schema {
         return schemas[schemaName] ?: throw RuntimeException("Schema $schemaName does not exists.");
@@ -100,6 +103,15 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_collation"] = Table("pg_collation", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_roles"] = Table("pg_roles", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_attrdef"] = Table("pg_attrdef", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_constraint"] = Table("pg_constraint", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_attribute"] = Table("pg_attribute", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_am"] = Table("pg_am", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_opclass"] = Table("pg_opclass", mutableListOf(
+            Column("opcnamespace")
+        ), mutableListOf())
+        pgCatalogSchema["pg_operator"] = Table("pg_operator", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_depend"] = Table("pg_depend", mutableListOf(), mutableListOf())
 
 
         val informationSchema = createSchema("information_schema")
