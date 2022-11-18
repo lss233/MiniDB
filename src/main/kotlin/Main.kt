@@ -5,6 +5,7 @@ import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.memory.Schema
 import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.NettyServer
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
@@ -28,11 +29,12 @@ fun main(args: Array<String>) {
             ")"
     println(sqlStr)
     val ast = SQLParser.parse(sqlStr)
-    val visitorXX = SelectStatementVisitor()
+    val visitorXX = CreateTableStatementVisitor()
 
     val elapsed = measureNanoTime  {
         try {
             ast.accept(visitorXX)
+            Engine["minidb"].createTable(visitorXX.relation!!)
         } finally {
             TraditionalTreePrinter().print(visitorXX.rootNode)
         }
