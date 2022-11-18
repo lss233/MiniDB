@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.schema
 
 import miniDB.parser.ast.expression.primary.Identifier
+import miniDB.parser.ast.fragment.ddl.ColumnDefinition
 
 /**
  * 进行关系运算过滤中的封装列的信息实体
@@ -10,14 +11,15 @@ import miniDB.parser.ast.expression.primary.Identifier
 class Column {
     val identifier : Identifier
     val name : String
-//        set(value) {
-//            identifier = Identifier(null, value)
-//            field = value
-//        }
+    lateinit var definition: ColumnDefinition
+
 
     constructor(id: Identifier){
         this.identifier = id;
         this.name = id.idText
+    }
+    constructor(id: Identifier, definition: ColumnDefinition): this(id) {
+        this.definition = definition
     }
     constructor(name: String) {
         this.identifier = Identifier(null, name)
