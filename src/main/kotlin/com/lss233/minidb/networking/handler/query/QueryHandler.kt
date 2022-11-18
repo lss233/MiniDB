@@ -5,6 +5,7 @@ import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.*
@@ -13,8 +14,8 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
 import miniDB.parser.ast.stmt.dal.DALSetStatement
+import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import miniDB.parser.ast.stmt.dml.DMLQueryStatement
-import miniDB.parser.recognizer.SQLParserDelegate
 import java.sql.SQLSyntaxErrorException
 
 class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Query>() {
@@ -33,6 +34,16 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
 
                 // 分析解析后的 SQL 语句，作出不同的反应
                 when(ast) {
+                    is DDLCreateTableStatement -> {
+                        val visitor = CreateTableStatementVisitor()
+                        try {
+                            ast.accept(visitor)
+                            Engine[session.properties["database"] ?: "minidb"].createTable(visitor.relation!!)
+                        } finally {
+                            TraditionalTreePrinter().print(visitor.rootNode)
+                        }
+                        ctx?.writeAndFlush(CommandComplete("SELECT 1"))?.sync()
+                    }
                     is DMLQueryStatement -> {
                         val relation: Relation? = if(queryString.lowercase() == "select version()") {
                             Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0")))
