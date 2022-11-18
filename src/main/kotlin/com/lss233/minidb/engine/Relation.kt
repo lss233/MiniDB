@@ -79,8 +79,8 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
     }
 
     fun innerJoin(relation: Relation, condition: Predicate<NTuple>): Relation {
-        val columns = columns.map { i -> Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
-        columns.addAll(relation.columns.map { i -> Column(Identifier(Identifier(null, relation.alias), i.name)) })
+        val columns = columns.map { i -> if (alias == null) i else Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
+        columns.addAll(relation.columns.map { i -> if (relation.alias == null) i else Column(Identifier(Identifier(null, relation.alias), i.name)) })
         val rows = ArrayList<NTuple>()
         for(leftRow in tuples) {
             for(rightRow in relation.tuples) {
