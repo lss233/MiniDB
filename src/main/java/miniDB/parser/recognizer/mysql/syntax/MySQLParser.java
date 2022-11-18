@@ -20,6 +20,7 @@ import miniDB.parser.recognizer.mysql.MySQLToken;
 import miniDB.parser.recognizer.mysql.lexer.MySQLLexer;
 
 import java.sql.SQLSyntaxErrorException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,6 +81,19 @@ public abstract class MySQLParser {
             case LITERAL_NUM_MIX_DIGIT:
             case LITERAL_NUM_PURE_DIGIT:
                 throw err("expect identifier");
+            case LITERAL_CHARS:
+                ArrayList<Byte> bytes = new ArrayList<>();
+                do {
+                    lexer.appendStringContent(bytes);
+                } while (lexer.nextToken() == MySQLToken.LITERAL_CHARS);
+                byte[] data = new byte[bytes.size()];
+                for (int i = 0, size = bytes.size(); i < size; i++) {
+                    data[i] = bytes.get(i);
+                }
+                String txt = new String(data);
+                id = new Identifier(null, txt, txt.toUpperCase());
+                id.setCacheEvalRst(cacheEvalRst);
+                break;
             default:
                 id = new Identifier(null, lexer.stringValue(), lexer.stringValueUppercase());
                 id.setCacheEvalRst(cacheEvalRst);
@@ -102,6 +116,19 @@ public abstract class MySQLParser {
                 case LITERAL_NUM_MIX_DIGIT:
                 case LITERAL_NUM_PURE_DIGIT:
                     throw err("expect identifier");
+                case LITERAL_CHARS:
+                    ArrayList<Byte> bytes = new ArrayList<>();
+                    do {
+                        lexer.appendStringContent(bytes);
+                    } while (lexer.nextToken() == MySQLToken.LITERAL_CHARS);
+                    byte[] data = new byte[bytes.size()];
+                    for (int i = 0, size = bytes.size(); i < size; i++) {
+                        data[i] = bytes.get(i);
+                    }
+                    String txt = new String(data);
+                    id = new Identifier(id, txt, txt.toUpperCase());
+                    id.setCacheEvalRst(cacheEvalRst);
+                    break;
                 default:
                     id = new Identifier(id, lexer.stringValue(), lexer.stringValueUppercase());
                     id.setCacheEvalRst(cacheEvalRst);

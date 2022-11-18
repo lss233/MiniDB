@@ -390,6 +390,7 @@ public abstract class MySQLDMLParser extends MySQLParser {
                     return new SubqueryFactor((QueryExpression) ref, alias);
                 }
                 return (TableReferences) ref;
+            case LITERAL_CHARS:
             case IDENTIFIER: {
                 Identifier table = identifier();
                 List<Identifier> partition = null;
