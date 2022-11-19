@@ -8,6 +8,7 @@ import com.lss233.minidb.engine.schema.Column
 import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
 import miniDB.parser.ast.expression.comparison.ComparisionGreaterThanExpression
+import miniDB.parser.ast.expression.comparison.ComparisionIsExpression
 import miniDB.parser.ast.expression.logical.LogicalOrExpression
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
@@ -202,6 +203,29 @@ class SelectStatementVisitor: Visitor() {
                 rightIdentifier
             }
             leftValue == rightValue
+        })
+
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+    override fun visit(node: ComparisionIsExpression) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Expression(operator='IS', mode=${node.mode})")
+        node.operand.accept(this)
+        val operand = when(node.operand) {
+            is Identifier ->
+                stack.pop() as String
+            else ->
+                node.operand
+        }
+
+        stack.push(Predicate<NTuple> { t: NTuple ->
+            val operandVal = if(operand is String) {
+                (t[node.operand as Identifier] as Cell<*>).value
+            } else {
+                operand
+            }
+            operandVal != null
         })
 
         parentNode.addChild(rootNode)
