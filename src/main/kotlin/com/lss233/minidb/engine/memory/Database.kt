@@ -20,8 +20,25 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         // TODO insert table info
         this["pg_catalog"]["pg_class"].let {
             run {
-                it.insert(arrayOf(1, table.name, "2", 0, 0, 10, 0, "mem", "1", "r"))
+                it.insert(arrayOf(1, table.name, identifier.parent.idText, 0, 0, 10, 0, "mem", "1", "r"))
             } }
+        this["information_schema"]["columns"].let {
+            run {
+                table.columns.forEachIndexed { index, col -> run {
+                    it.insert(arrayOf(
+                        "minidb",
+                        identifier.parent.idText,
+                        identifier.idText,
+                        col.identifier.idText,
+                        index,
+                        "minidb",
+                        identifier.parent.idText,
+                        col.definition.dataType.typeName.name
+                    ))
+                } }
+
+            }
+        }
         return this
     }
 //    operator fun set(tableName: String, table: Table) {
@@ -54,8 +71,8 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         pgCatalogSchema["pg_namespace"] = Table("pg_namespace", mutableListOf(
                 Column("oid"), Column("nspname"), Column("nspower"), Column("nspacl")
             ), mutableListOf(
-                NTuple.from("1", "pg_catalog", "10", "{postgres=UC/postgres,=U/postgres}"),
-                NTuple.from("2", "public", "10", "{postgres=UC/postgres,=U/postgres}"),
+                NTuple.from("pg_catalog", "pg_catalog", "10", "{postgres=UC/postgres,=U/postgres}"),
+                NTuple.from("public", "public", "10", "{postgres=UC/postgres,=U/postgres}"),
             )
         )
         pgCatalogSchema["pg_tablespace"]  = Table("pg_tablespace", mutableListOf(
@@ -101,7 +118,9 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 
         pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_collation"] = Table("pg_collation", mutableListOf(), mutableListOf())
+//        pgCatalogSchema["pg_collation"] = Table("pg_collation", mutableListOf(
+//
+//        ), mutableListOf())
         pgCatalogSchema["pg_roles"] = Table("pg_roles", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_attrdef"] = Table("pg_attrdef", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_constraint"] = Table("pg_constraint", mutableListOf(), mutableListOf())
@@ -112,6 +131,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         ), mutableListOf())
         pgCatalogSchema["pg_operator"] = Table("pg_operator", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_depend"] = Table("pg_depend", mutableListOf(), mutableListOf())
+        pgCatalogSchema["pg_matviews"] = Table("pg_matviews", mutableListOf(), mutableListOf())
 
 
         val informationSchema = createSchema("information_schema")
@@ -125,7 +145,10 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         ), mutableListOf())
 
         informationSchema["tables"] = Table("tables", mutableListOf(), mutableListOf())
-        informationSchema["columns"] = Table("columns", mutableListOf(), mutableListOf())
+        informationSchema["columns"] = Table("columns", mutableListOf(
+            Column("table_catalog"), Column("table_schema"), Column("table_name"), Column("column_name"), Column("ordinal_position"),
+            Column("udt_catalog"), Column("udt_schema"), Column("udt_name")
+        ), mutableListOf())
 
     }
 
