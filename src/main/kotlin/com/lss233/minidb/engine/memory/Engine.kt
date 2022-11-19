@@ -2,16 +2,35 @@ package com.lss233.minidb.engine.memory
 
 import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
+import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.primary.Identifier
-import java.util.*
-import javax.xml.crypto.Data
+import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import kotlin.collections.HashMap
 
 object Engine {
     private val databases = HashMap<String, Database>()
     val session = ThreadLocal<Session>()
+
+    fun execute(sql: String): Any? {
+        when(val ast = SQLParser.parse(sql)) {
+            is DDLCreateTableStatement -> {
+                val visitor = CreateTableStatementVisitor()
+                try {
+                    ast.accept(visitor)
+                    databases[session.get()?.properties?.get("database") ?: "minidb"]?.
+                        createTable(visitor.relation!!, visitor.tableIdentifier!!)
+                            ?: throw RuntimeException("Database not exists.")
+                } finally {
+                    TraditionalTreePrinter().print(visitor.rootNode)
+                }
+            }
+        }
+        return null
+    }
     operator fun get(identifier: Identifier) : Table {
         val db = databases[session.get()?.properties?.get("database") ?: "minidb"] ?: throw RuntimeException("Database not exists.")
         val schema = if(identifier.parent == null) {

@@ -24,17 +24,31 @@ fun main(args: Array<String>) {
 
     Engine.createDatabase("minidb")
 
-    val sqlStr = "CREATE TABLE \"public\".\"tab\" (\n" +
+    Engine.execute("CREATE TABLE pg_catalog.pg_collation (\n" +
+            "    oid integer NOT NULL,\n" +
+            "    collname text NOT NULL,\n" +
+            "    collnamespace integer NOT NULL,\n" +
+            "    collowner integer NOT NULL,\n" +
+            "    collprovider text NOT NULL,\n" +
+            "    collisdeterministic boolean NOT NULL,\n" +
+            "    collencoding integer NOT NULL,\n" +
+            "    collcollate text NOT NULL,\n" +
+            "    collctype text NOT NULL,\n" +
+            "    collversion text\n" +
+            ")")
+    Engine.execute("CREATE TABLE \"public\".\"tab\" (\n" +
             "  \"col\" varchar(255)\n" +
-            ")"
+            ")")
+    val sqlStr = "SELECT i.indrelid AS oid, ci.relname AS indexname, ct.relname AS tablename, am.amname, con.conexclop,i.indkey, i.indclass, i.indnatts, i.indoption ,i.indexrelid FROM pg_index i LEFT JOIN pg_class ct ON ct.oid = i.indrelid LEFT JOIN pg_class ci ON ci.oid = i.indexrelid LEFT JOIN pg_namespace tns ON tns.oid = ct.relnamespace LEFT JOIN pg_namespace ins ON ins.oid = ci.relnamespace LEFT JOIN pg_tablespace ts ON ci.reltablespace = ts.oid LEFT JOIN pg_am am ON ci.relam = am.oid LEFT JOIN pg_depend dep ON dep.classid = ci.tableoid AND dep.objid = ci.oid AND dep.refobjsubid = '0' LEFT JOIN pg_constraint con ON con.tableoid = dep.refclassid AND con.oid = dep.refobjid AND con.contype = 'x' WHERE tns.nspname = 'public' AND ct.relname = 'tab' AND conname IS NOT NULL"
     println(sqlStr)
     val ast = SQLParser.parse(sqlStr)
-    val visitorXX = CreateTableStatementVisitor()
+//    val visitorXX = CreateTableStatementVisitor()
+    val visitorXX = SelectStatementVisitor()
 
     val elapsed = measureNanoTime  {
         try {
             ast.accept(visitorXX)
-            Engine["minidb"].createTable(visitorXX.relation!!, visitorXX.tableIdentifier!!)
+//            Engine["minidb"].createTable(visitorXX.relation!!, visitorXX.tableIdentifier!!)
         } finally {
             TraditionalTreePrinter().print(visitorXX.rootNode)
         }
