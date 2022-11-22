@@ -2,6 +2,7 @@ package com.lss233.minidb.engine.storage
 
 import cn.hutool.core.io.FileUtil
 import com.google.gson.Gson
+import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.config.DBConfig
 import com.lss233.minidb.engine.config.DbStorageConfig
@@ -63,7 +64,7 @@ class StorageService {
         println("Gson: toJson ==> $toJson")
         val tableHeaderBytes = toJson.toByteArray(Charset.defaultCharset())
         // Copy header info
-        System.arraycopy(tableHeaderBytes, 0, totalBytes, 0, DbStorageConfig.TABLE_HEADER_SIZE)
+        System.arraycopy(tableHeaderBytes, 0, storageBytes, 0, tableHeaderBytes.size)
 
         var realDataPos = DbStorageConfig.TABLE_HEADER_SIZE
 
@@ -74,7 +75,8 @@ class StorageService {
                 val dataTemp = tuple[Column(field.colName)]
                 when(field.dataTypeName) {
                     INT -> {
-                        ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(dataTemp as Int))
+                        dataTemp as Cell<*>
+                        ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(dataTemp.value as Int))
                         realDataPos += 4
                     }
                     GEOMETRY -> TODO()
@@ -100,7 +102,8 @@ class StorageService {
                     DATETIME -> TODO()
                     YEAR -> TODO()
                     CHAR -> {
-                        val str = dataTemp.toString().toByteArray(Charset.defaultCharset())
+                        dataTemp as Cell<*>
+                        val str = dataTemp.value.toString().toByteArray(Charset.defaultCharset())
                         val strByteSize = str.size
                         System.arraycopy(str, 0, storageBytes, realDataPos, strByteSize)
                         realDataPos += strByteSize
