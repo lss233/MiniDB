@@ -75,7 +75,7 @@ class SegmentPageContainer {
         val page = Page()
         val data = ByteArray(16 * 1024)
         page.data = data
-        val realFile: String = DBConfig.DB_ROOT_PATH + dbName + "_" + tableName + DBConfig.FILE_SUFFIX
+        val realFile: String = DBConfig.DB_ROOT_PATH + dbName + "_" + tableName + DBConfig.TABLE_SUFFIX
         val file = File(realFile)
         var returnFlag = false
         try {
