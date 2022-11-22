@@ -131,5 +131,21 @@ class StorageService {
         }
         return storageBytes
     }
-}
 
+    private fun parserTableHeaderBytes(headerByteArray: ByteArray): TableHeader {
+        // slip the size of table header
+        val gson = Gson()
+        return gson.fromJson(headerByteArray.toString(),TableHeader::class.java)
+    }
+
+    fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
+        val nTuples = arrayListOf<NTuple>()
+
+        val tableHeader = this.parserTableHeaderBytes(bytes)
+
+        for (field in tableHeader.tableField) {
+
+        }
+        return nTuples
+    }
+}

@@ -8,6 +8,10 @@ class TableHeader {
 
     var tableField = arrayListOf<TableField>()
 
+    /**
+     * 行数记录
+     */
+    var recordNumber: Int = 0
 
     fun addTableFile(table:TableField) {
         this.tableField.add(table)
