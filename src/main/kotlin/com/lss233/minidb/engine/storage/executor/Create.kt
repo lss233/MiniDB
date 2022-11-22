@@ -7,6 +7,7 @@ import com.lss233.minidb.engine.storage.struct.DbTableField
 import com.lss233.minidb.engine.storage.type.StoredType
 import com.lss233.minidb.engine.storage.type.TypeLen
 import com.lss233.minidb.utils.TypeUtil
+import miniDB.parser.ast.fragment.ddl.datatype.DataType
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import miniDB.parser.recognizer.SQLParserDelegate
 import java.io.File
@@ -61,32 +62,32 @@ class Create {
         // TODO 数据类型需要合并AST当中的
         when (type) {
             "int" -> {
-                fieldPO.type = StoredType.INT
+                fieldPO.type = DataType.DataTypeName.INT
                 fieldPO.byteLen = TypeLen.INTEGER
             }
 
             "BIGINT" -> {
-                fieldPO.type = StoredType.BIGINT
+                fieldPO.type = DataType.DataTypeName.BIGINT
                 fieldPO.byteLen = TypeLen.BIGINT
             }
 
             "CHAR" -> {
-                fieldPO.type = StoredType.CHAR
+                fieldPO.type = DataType.DataTypeName.CHAR
                 fieldPO.byteLen = byteLen
             }
 
             "VARCHAR" -> {
-                fieldPO.type = StoredType.VARCHAR
+                fieldPO.type = DataType.DataTypeName.VARCHAR
                 fieldPO.byteLen = byteLen
             }
 
             "DATA_TIME" -> {
-                fieldPO.type = StoredType.DATA_TIME
+                fieldPO.type = DataType.DataTypeName.DATETIME
                 fieldPO.byteLen = TypeLen.DATA_TIME
             }
 
             "TIME_STAMP" -> {
-                fieldPO.type = StoredType.TIME_STAMP
+                fieldPO.type = DataType.DataTypeName.TIMESTAMP
                 fieldPO.byteLen = TypeLen.TIME_STAMP
             }
         }

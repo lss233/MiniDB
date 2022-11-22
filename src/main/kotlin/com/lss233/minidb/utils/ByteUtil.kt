@@ -7,8 +7,8 @@ class ByteUtil {
 
     companion object {
         @JvmStatic
-        fun arraycopy(target: ByteArray?, pos: Int, newBytes: ByteArray): ByteArray? {
-            target?.let { System.arraycopy(newBytes, 0, it, pos, newBytes.size) }
+        fun arraycopy(target: ByteArray, pos: Int, newBytes: ByteArray): ByteArray {
+            System.arraycopy(newBytes, 0, target, pos, newBytes.size)
             return target
         }
 

@@ -10,8 +10,8 @@ class DbTableStruct {
      */
     var tableName: String? = null
         get() {
-            // TODO 以后改成返回真正的文件名  预计: 库名_表名.tab
-            return field + DBConfig.FILE_SUFFIX
+            // TODO 以后改成返回真正的文件名  预计: 库名_表名.tb
+            return field
         }
 
     /**
@@ -41,7 +41,7 @@ class DbTableStruct {
     var fieldNameList = ArrayList<String>()
 
 
-    var fieldTypeList: ArrayList<StoredType> = ArrayList<StoredType>()
+    var fieldTypeList = ArrayList<StoredType>()
 
 
     var fieldLensList = ArrayList<Int>()

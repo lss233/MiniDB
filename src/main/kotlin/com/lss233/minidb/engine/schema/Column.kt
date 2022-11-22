@@ -9,10 +9,14 @@ import miniDB.parser.ast.fragment.ddl.ColumnDefinition
  */
 
 class Column {
+
     val identifier : Identifier
+
+    /**
+     * 列名
+     */
     val name : String
     lateinit var definition: ColumnDefinition
-
 
     constructor(id: Identifier){
         this.identifier = id;

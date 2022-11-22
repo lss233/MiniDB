@@ -53,7 +53,8 @@ public class DataType implements ASTNode {
         mapper.put(DataTypeName.FLOAT, (byte) 4);
         mapper.put(DataTypeName.GEOMETRY, (byte) 255);
         mapper.put(DataTypeName.GEOMETRYCOLLECTION, (byte) 255);
-        mapper.put(DataTypeName.INT, (byte) 3);
+        // TODO 测试修改为4，不知道影响 Jvm Int 为32为4比特，这里为啥是3?
+        mapper.put(DataTypeName.INT, (byte) 4);
         mapper.put(DataTypeName.LINESTRING, (byte) 254);
         mapper.put(DataTypeName.LONGBLOB, (byte) 252);
         mapper.put(DataTypeName.LONGTEXT, (byte) 252);

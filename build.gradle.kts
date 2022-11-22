@@ -18,6 +18,7 @@ dependencies {
     implementation("io.netty:netty-all:4.1.84.Final")
     implementation("hu.webarticum:tree-printer:2.1.0")
     implementation("cn.hutool:hutool-all:5.8.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     testImplementation(kotlin("test"))
 }
 
