@@ -12,6 +12,8 @@ import com.lss233.minidb.engine.storage.struct.TableField
 import com.lss233.minidb.engine.storage.struct.TableHeader
 import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName.*
+import java.io.File
+import java.lang.RuntimeException
 import java.nio.charset.Charset
 
 class StorageService {
@@ -30,14 +32,15 @@ class StorageService {
 
     fun getTable(dbName:String,tableName:String): ArrayList<NTuple> {
         // Open Byte File
-
         // Do One For Pages And Transform EntityCLass
-
-        return ArrayList()
+        return parserNTupleBytes(FileUtil.readBytes(DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX))
     }
 
-    fun saveToTable(table:Table,nTuples: ArrayList<NTuple>) {
-
+    fun createTable(nTuples: ArrayList<NTuple>, dbName: String, tableName: String) {
+        if (FileUtil.exist(DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX)) {
+            throw RuntimeException("ERROR: The table or database has existed.")
+        }
+        FileUtil.writeBytes(buildStorageBytes(nTuples), DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX)
     }
 
     fun buildStorageBytes(nTuples: ArrayList<NTuple>):ByteArray {
@@ -105,7 +108,10 @@ class StorageService {
                         dataTemp as Cell<*>
                         val str = dataTemp.value.toString().toByteArray(Charset.defaultCharset())
                         val strByteSize = str.size
-                        System.arraycopy(str, 0, storageBytes, realDataPos, strByteSize)
+                        // mark the length of chars
+                        ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(strByteSize))
+                        realDataPos += 4
+                        ByteUtil.arraycopy(storageBytes, realDataPos, str)
                         realDataPos += strByteSize
                     }
                     VARCHAR -> TODO()
@@ -141,10 +147,66 @@ class StorageService {
     fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
         val nTuples = arrayListOf<NTuple>()
 
-        val tableHeader = this.parserTableHeaderBytes(bytes)
-
-        for (field in tableHeader.tableField) {
-
+        val tableHeader = this.parserTableHeaderBytes(bytes.copyOfRange(0, DbStorageConfig.TABLE_HEADER_SIZE))
+        // for every tuple
+        for(index in 0..tableHeader.recordNumber) {
+            var realPos = DbStorageConfig.TABLE_HEADER_SIZE
+            for (field in tableHeader.tableField) {
+                val nTuple = NTuple()
+                when(field.dataTypeName) {
+                    INT -> {
+                        nTuple.add(Cell(Column(field.colName), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))))
+                        realPos += 4
+                    }
+                    GEOMETRY -> TODO()
+                    POINT -> TODO()
+                    LINESTRING -> TODO()
+                    POLYGON -> TODO()
+                    MULTIPOINT -> TODO()
+                    MULTILINESTRING -> TODO()
+                    GEOMETRYCOLLECTION -> TODO()
+                    MULTIPOLYGON -> TODO()
+                    BIT -> TODO()
+                    TINYINT -> TODO()
+                    SMALLINT -> TODO()
+                    MEDIUMINT -> TODO()
+                    BIGINT -> TODO()
+                    REAL -> TODO()
+                    DOUBLE -> TODO()
+                    FLOAT -> TODO()
+                    DECIMAL -> TODO()
+                    DATE -> TODO()
+                    TIME -> TODO()
+                    TIMESTAMP -> TODO()
+                    DATETIME -> TODO()
+                    YEAR -> TODO()
+                    CHAR -> {
+                        // get the charsLength
+                        val charLength = ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))
+                        realPos += 4
+                        nTuple.add(Cell(Column(field.colName), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + charLength))))
+                        realPos += charLength
+                    }
+                    VARCHAR -> TODO()
+                    BINARY -> TODO()
+                    VARBINARY -> TODO()
+                    TINYBLOB -> TODO()
+                    BLOB -> TODO()
+                    MEDIUMBLOB -> TODO()
+                    LONGBLOB -> TODO()
+                    TINYTEXT -> TODO()
+                    TEXT -> TODO()
+                    MEDIUMTEXT -> TODO()
+                    LONGTEXT -> TODO()
+                    ENUM -> TODO()
+                    SET -> TODO()
+                    BOOL -> TODO()
+                    BOOLEAN -> TODO()
+                    SERIAL -> TODO()
+                    FIXED -> TODO()
+                    JSON -> TODO()
+                }
+            }
         }
         return nTuples
     }

@@ -25,5 +25,4 @@ class TableHeader {
         }
         return size
     }
-
 }
