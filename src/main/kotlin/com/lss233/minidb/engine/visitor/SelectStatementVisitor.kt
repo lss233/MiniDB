@@ -57,6 +57,8 @@ open class SelectStatementVisitor: Visitor() {
             result = result.select(cond)
         } }
 
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("* select")
 
         var condProjection : Predicate<Column>? = null
         for (expressionStringPair in node.selectExprList) {
@@ -67,6 +69,9 @@ open class SelectStatementVisitor: Visitor() {
             }
             condProjection = condProjection?.or(condLocal) ?: condLocal
         }
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+
         result = if (condProjection != null) result.projection(condProjection) else result.projection { true }
         result = Relation(result.columns.map { column ->
             Column(node.selectExprList.firstOrNull { column.identifier == it.key }?.value ?: column.name)
