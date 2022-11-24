@@ -52,10 +52,10 @@ fun main() {
 
     storageService.initStorageService()
 
-    storageService.createTable(tuples, dbName = "testDb", tableName = "testTable")
+//    storageService.createTable(tuples, dbName = "testDb", tableName = "testTable")
 
-    val res = storageService.getTable(dbName = "testDb", tableName = "testTable")
-    println(res)
+//    val res = storageService.getTable(dbName = "testDb", tableName = "testTable")
+//    println(res)
 }
 
 fun test(args: Array<String>) {

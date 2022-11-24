@@ -6,8 +6,8 @@ import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.config.DBConfig
 import com.lss233.minidb.engine.config.DbStorageConfig
+import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
-import com.lss233.minidb.engine.storage.struct.TableField
 import com.lss233.minidb.engine.storage.struct.TableHeader
 import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName.*
@@ -20,10 +20,6 @@ class StorageService {
             println("System File Not Found, Initializing...")
             // TODO Create pg_System_tables : User information Table & Table information Table
             FileUtil.mkdir(DBConfig.SYSTEM_FILE)
-
-
-
-
         }
         if (!FileUtil.exist(DBConfig.DATA_FILE)) {
             println("Data File Not Found, Initializing...")
@@ -31,35 +27,46 @@ class StorageService {
         }
     }
 
-    fun getTable(dbName:String,tableName:String): ArrayList<NTuple> {
-        // Open Byte File
+    fun getTable(dbName:String, schemaName: String, tableName:String): Table {
+        // Judge File existed
+        val filePath = DBConfig.DATA_FILE + dbName + "\\" + schemaName + "\\" + tableName + DBConfig.TABLE_SUFFIX
+        if (!FileUtil.exist(filePath)) {
+            throw RuntimeException("ERROR: $tableName table is not existed.")
+        }
         // Do One For Pages And Transform EntityCLass
-        return parserNTupleBytes(FileUtil.readBytes(DBConfig.DATA_FILE + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX))
+        return parserTableBytes(FileUtil.readBytes(filePath))
     }
 
-    fun createTable(nTuples: ArrayList<NTuple>, dbName: String, tableName: String) {
-        if (FileUtil.exist(DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX)) {
-            throw RuntimeException("ERROR: The table or database has existed.")
+    fun createTable(table:Table, dbName: String, tableName: String) {
+        val filePath = DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX
+        if (FileUtil.exist(filePath)) {
+            throw RuntimeException("ERROR: The $tableName table has existed.")
         }
-        FileUtil.writeBytes(buildStorageBytes(nTuples), DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX)
+        FileUtil.writeBytes(buildStorageBytes(table), filePath)
     }
 
-    private fun buildStorageBytes(nTuples: ArrayList<NTuple>):ByteArray {
-        val tableHeader = TableHeader()
+    /**
+     * 更新表或者保存表(is temp)
+     * override file
+     */
+    fun updateOrSaveTable(table: Table, dbName: String, schemaName: String, tableName: String) {
+        val filePath = DBConfig.DATA_FILE + dbName + "\\" + schemaName + "\\" + tableName + DBConfig.TABLE_SUFFIX
+        FileUtil.writeBytes(buildStorageBytes(table), filePath)
+    }
 
-        tableHeader.recordNumber = nTuples.size
-        // Basic the first nTuple's columns form the table header info.
-        val columnInfo = nTuples[0].columns
+    private fun buildStorageBytes(table: Table):ByteArray {
+        val tableHeader = TableHeader(tableName = table.name)
 
-        for (item in columnInfo) {
-            tableHeader.addTableFile(TableField(item.name, item.definition.dataType.typeName))
-        }
+        tableHeader.recordNumber = table.tuples.size
+        // Basic the columns form the table header info.
+
+        tableHeader.columns = table.columns as ArrayList<Column>
 
         // After parsing all columns, we can calculate the length occupied by a column
         val tupleSize = tableHeader.getColumnStorageSize()
 
         // totalBytesSize = Table header size + NTuple_Count * (The sum of every type that exist)
-        val totalBytesSize = DbStorageConfig.TABLE_HEADER_SIZE + nTuples.size * tupleSize
+        val totalBytesSize = DbStorageConfig.TABLE_HEADER_SIZE + tableHeader.recordNumber * tupleSize
         
         val storageBytes = ByteArray(totalBytesSize)
         
@@ -77,11 +84,11 @@ class StorageService {
         var realDataPos = DbStorageConfig.TABLE_HEADER_SIZE
 
         // copy body info
-        for (tuple in nTuples) {
+        for (tuple in table.tuples) {
             // order by table header
-            for (field in tableHeader.tableField) {
-                val dataTemp = tuple[Column(field.colName)]
-                when(field.dataTypeName) {
+            for (column in tableHeader.columns) {
+                val dataTemp = tuple[Column(column.name)]
+                when(column.definition.dataType.typeName!!) {
                     INT -> {
                         dataTemp as Cell<*>
                         ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(dataTemp.value as Int))
@@ -150,7 +157,8 @@ class StorageService {
         return gson.fromJson(String(headerByteArray.copyOfRange(4, headerSize + 4), charset("UTF-8")),TableHeader::class.java)
     }
 
-    private fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
+    private fun parserTableBytes(bytes: ByteArray): Table {
+
         val nTuples = arrayListOf<NTuple>()
 
         val tableHeader = this.parserTableHeaderBytes(bytes.copyOfRange(0, DbStorageConfig.TABLE_HEADER_SIZE))
@@ -158,10 +166,10 @@ class StorageService {
         for(index in 0 until tableHeader.recordNumber) {
             var realPos = DbStorageConfig.TABLE_HEADER_SIZE
             val nTuple = NTuple()
-            for (field in tableHeader.tableField) {
-                when(field.dataTypeName) {
+            for (column in tableHeader.columns) {
+                when(column.definition.dataType.typeName!!) {
                     INT -> {
-                        nTuple.add(Cell(Column(field.colName), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))))
+                        nTuple.add(Cell(Column(column.name), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))))
                         realPos += 4
                     }
                     GEOMETRY -> TODO()
@@ -190,7 +198,7 @@ class StorageService {
                         // get the charsLength
                         val charLength = ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))
                         realPos += 4
-                        nTuple.add(Cell(Column(field.colName), String(bytes.copyOfRange(realPos, realPos + charLength),
+                        nTuple.add(Cell(Column(column.name), String(bytes.copyOfRange(realPos, realPos + charLength),
                             charset("UTF-8")
                         )))
                         realPos += charLength
@@ -217,6 +225,6 @@ class StorageService {
             }
             nTuples.add(nTuple)
         }
-        return nTuples
+        return Table(name = tableHeader.tableName, columns = tableHeader.columns, tuples = nTuples.toMutableList())
     }
 }
