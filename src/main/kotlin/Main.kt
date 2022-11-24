@@ -24,18 +24,6 @@ fun main(args: Array<String>) {
 
     Engine.createDatabase("minidb")
 
-    Engine.execute("CREATE TABLE pg_catalog.pg_collation (\n" +
-            "    oid integer NOT NULL,\n" +
-            "    collname text NOT NULL,\n" +
-            "    collnamespace integer NOT NULL,\n" +
-            "    collowner integer NOT NULL,\n" +
-            "    collprovider text NOT NULL,\n" +
-            "    collisdeterministic boolean NOT NULL,\n" +
-            "    collencoding integer NOT NULL,\n" +
-            "    collcollate text NOT NULL,\n" +
-            "    collctype text NOT NULL,\n" +
-            "    collversion text\n" +
-            ")")
     Engine.execute("CREATE TABLE \"public\".\"tab\" (\n" +
             "  \"col\" varchar(255)\n" +
             ")")

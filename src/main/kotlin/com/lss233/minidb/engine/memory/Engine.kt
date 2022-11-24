@@ -12,8 +12,13 @@ import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import kotlin.collections.HashMap
 
 object Engine {
+    val systemSession: Session = Session()
     private val databases = HashMap<String, Database>()
     val session = ThreadLocal<Session>()
+
+    init {
+        systemSession.properties["database"] = "minidb"
+    }
 
     fun execute(sql: String): Any? {
         when(val ast = SQLParser.parse(sql)) {
