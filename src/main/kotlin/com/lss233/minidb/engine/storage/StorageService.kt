@@ -6,15 +6,12 @@ import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.config.DBConfig
 import com.lss233.minidb.engine.config.DbStorageConfig
-import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.storage.struct.TableField
 import com.lss233.minidb.engine.storage.struct.TableHeader
 import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName.*
-import java.io.File
 import java.lang.RuntimeException
-import java.nio.charset.Charset
 
 class StorageService {
 
@@ -47,9 +44,9 @@ class StorageService {
         val tableHeader = TableHeader()
 
         tableHeader.recordNumber = nTuples.size
-
         // Basic the first nTuple's columns form the table header info.
         val columnInfo = nTuples[0].columns
+
         for (item in columnInfo) {
             tableHeader.addTableFile(TableField(item.name, item.definition.dataType.typeName))
         }
@@ -67,9 +64,14 @@ class StorageService {
         val gson = Gson()
         val toJson = gson.toJson(tableHeader)
         println("Gson: toJson ==> $toJson")
-        val tableHeaderBytes = toJson.toByteArray(Charset.defaultCharset())
+        val tableHeaderBytes = toJson.toByteArray(charset("UTF-8"))
+
+
+        // mark header size
+        ByteUtil.arraycopy(storageBytes, 0, ByteUtil.intToByte4(tableHeaderBytes.size))
+
         // Copy header info
-        System.arraycopy(tableHeaderBytes, 0, storageBytes, 0, tableHeaderBytes.size)
+        ByteUtil.arraycopy(storageBytes,4, tableHeaderBytes)
 
         var realDataPos = DbStorageConfig.TABLE_HEADER_SIZE
 
@@ -108,7 +110,7 @@ class StorageService {
                     YEAR -> TODO()
                     CHAR -> {
                         dataTemp as Cell<*>
-                        val str = dataTemp.value.toString().toByteArray(Charset.defaultCharset())
+                        val str = dataTemp.value.toString().toByteArray(charset("UTF-8"))
                         val strByteSize = str.size
                         // mark the length of chars
                         ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(strByteSize))
@@ -141,20 +143,21 @@ class StorageService {
     }
 
     private fun parserTableHeaderBytes(headerByteArray: ByteArray): TableHeader {
+        val headerSize = ByteUtil.byteToInt4(headerByteArray.copyOfRange(0,4))
         // slip the size of table header
         val gson = Gson()
-        return gson.fromJson(headerByteArray.toString(),TableHeader::class.java)
+        return gson.fromJson(String(headerByteArray.copyOfRange(4, headerSize + 4), charset("UTF-8")),TableHeader::class.java)
     }
 
-    private fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
+    fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
         val nTuples = arrayListOf<NTuple>()
 
         val tableHeader = this.parserTableHeaderBytes(bytes.copyOfRange(0, DbStorageConfig.TABLE_HEADER_SIZE))
         // for every tuple
-        for(index in 0..tableHeader.recordNumber) {
+        for(index in 0 until tableHeader.recordNumber) {
             var realPos = DbStorageConfig.TABLE_HEADER_SIZE
+            val nTuple = NTuple()
             for (field in tableHeader.tableField) {
-                val nTuple = NTuple()
                 when(field.dataTypeName) {
                     INT -> {
                         nTuple.add(Cell(Column(field.colName), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))))
@@ -186,7 +189,9 @@ class StorageService {
                         // get the charsLength
                         val charLength = ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + 4))
                         realPos += 4
-                        nTuple.add(Cell(Column(field.colName), ByteUtil.byteToInt4(bytes.copyOfRange(realPos, realPos + charLength))))
+                        nTuple.add(Cell(Column(field.colName), String(bytes.copyOfRange(realPos, realPos + charLength),
+                            charset("UTF-8")
+                        )))
                         realPos += charLength
                     }
                     VARCHAR -> TODO()
@@ -209,6 +214,7 @@ class StorageService {
                     JSON -> TODO()
                 }
             }
+            nTuples.add(nTuple)
         }
         return nTuples
     }

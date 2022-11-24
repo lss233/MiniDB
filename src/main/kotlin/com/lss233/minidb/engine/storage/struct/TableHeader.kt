@@ -21,7 +21,7 @@ class TableHeader {
         var size = 0
 
         for (item in tableField) {
-            size += DataType.getType(item.dataTypeName).toInt()
+            size += DataType.getTypeSize(item.dataTypeName)
         }
         return size
     }

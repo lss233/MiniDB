@@ -19,32 +19,47 @@ fun main() {
 
     val storageService = StorageService()
 
-    val column = Column("1")
-    column.definition = ColumnDefinition(
-        DataType(DataType.DataTypeName.INT,  true, true, true,null,null,null,null,null),
+    val column1 = Column("1")
+    column1.definition = ColumnDefinition(
+        DataType(DataType.DataTypeName.CHAR,  true, true, true,null,null,null,null,null),
         true,null,true,null,null,null,null,null,true,true,null
     )
 
-    val nTuple = NTuple.from(Cell(column,1))
+    val column2 = Column("2")
+    column2.definition = ColumnDefinition(
+        DataType(DataType.DataTypeName.CHAR,  true, true, true,null,null,null,null,null),
+        true,null,true,null,null,null,null,null,true,true,null
+    )
+
+    val column3 = Column("3")
+    column3.definition = ColumnDefinition(
+        DataType(DataType.DataTypeName.CHAR,  true, true, true,null,null,null,null,null),
+        true,null,true,null,null,null,null,null,true,true,null
+    )
+
+    val column4 = Column("4")
+    column4.definition = ColumnDefinition(
+        DataType(DataType.DataTypeName.CHAR,  true, true, true,null,null,null,null,null),
+        true,null,true,null,null,null,null,null,true,true,null
+    )
 
     val tuples = ArrayList<NTuple>()
 
-    tuples.add(nTuple)
-    tuples.add(nTuple)
-    tuples.add(nTuple)
-    tuples.add(nTuple)
-    tuples.add(nTuple)
-    tuples.add(nTuple)
+    val tuple = NTuple.from(Cell(column1,"asdf"), Cell(column2,"123"), Cell(column3,"ertregh"), Cell(column4,"adsgdsfg"))
 
-    println(storageService.buildStorageBytes(tuples))
+    tuples.add(tuple)
+    tuples.add(tuple)
+    tuples.add(tuple)
+    tuples.add(tuple)
+    tuples.add(tuple)
+    tuples.add(tuple)
 
-}
+    val tempBytes = storageService.buildStorageBytes(tuples)
 
-fun aaa() {
-    //Gson解析
-    val gson = Gson()
-    val fromJson = gson.fromJson("{}", TableField::class.java)
-    println("Gson fromJson ==> $fromJson")
+    val nTuples = storageService.parserNTupleBytes(tempBytes)
+
+    println(nTuples)
+
 }
 
 fun test(args: Array<String>) {
@@ -85,14 +100,8 @@ fun test(args: Array<String>) {
 
     insetDataMap.put("test_col_","123")
 
-
-
     // 写入文件
     println(insert.doInsert(1,"testDB","testTable", insetDataMap))
 
-
     // TODO 完成比特流到实体信息的解析
-
-
-
 }
