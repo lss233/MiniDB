@@ -21,6 +21,7 @@ import miniDB.parser.ast.expression.Expression;
 import miniDB.parser.ast.expression.primary.Identifier;
 import miniDB.parser.visitor.Visitor;
 
+import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +32,8 @@ import java.util.List;
  */
 public class DataType implements ASTNode {
     public static final HashMap<DataTypeName, Byte> mapper = new HashMap<>();
+
+    public static final HashMap<DataTypeName, Integer> DATA_TYPE_SIZE = new HashMap<>();
 
     public enum DataTypeName {
         GEOMETRY, POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, GEOMETRYCOLLECTION, MULTIPOLYGON, BIT, TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT, REAL, DOUBLE, FLOAT, DECIMAL, DATE, TIME, TIMESTAMP, DATETIME, YEAR, CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET, BOOL, BOOLEAN, SERIAL, FIXED, JSON
@@ -53,7 +56,8 @@ public class DataType implements ASTNode {
         mapper.put(DataTypeName.FLOAT, (byte) 4);
         mapper.put(DataTypeName.GEOMETRY, (byte) 255);
         mapper.put(DataTypeName.GEOMETRYCOLLECTION, (byte) 255);
-        mapper.put(DataTypeName.INT, (byte) 3);
+        // TODO 测试修改为4，不知道影响 Jvm Int 为32为4比特，这里为啥是3?
+        mapper.put(DataTypeName.INT, (byte) 4);
         mapper.put(DataTypeName.LINESTRING, (byte) 254);
         mapper.put(DataTypeName.LONGBLOB, (byte) 252);
         mapper.put(DataTypeName.LONGTEXT, (byte) 252);
@@ -79,6 +83,50 @@ public class DataType implements ASTNode {
         mapper.put(DataTypeName.VARCHAR, (byte) 253);
         mapper.put(DataTypeName.YEAR, (byte) 13);
         mapper.put(DataTypeName.JSON, (byte) 245);
+
+        DATA_TYPE_SIZE.put(DataTypeName.BIGINT, 3);
+        DATA_TYPE_SIZE.put(DataTypeName.BINARY, 254);
+        DATA_TYPE_SIZE.put(DataTypeName.BIT, 16);
+        DATA_TYPE_SIZE.put(DataTypeName.BLOB, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.BOOL, 1);
+        DATA_TYPE_SIZE.put(DataTypeName.BOOLEAN, 1);
+        DATA_TYPE_SIZE.put(DataTypeName.CHAR, 254);
+        DATA_TYPE_SIZE.put(DataTypeName.DATE, 10);
+        DATA_TYPE_SIZE.put(DataTypeName.DATETIME, 12);
+        DATA_TYPE_SIZE.put(DataTypeName.DECIMAL, 246);
+        DATA_TYPE_SIZE.put(DataTypeName.DOUBLE, 4);
+        DATA_TYPE_SIZE.put(DataTypeName.ENUM, 247);
+        DATA_TYPE_SIZE.put(DataTypeName.FIXED, 246);
+        DATA_TYPE_SIZE.put(DataTypeName.FLOAT, 4);
+        DATA_TYPE_SIZE.put(DataTypeName.GEOMETRY, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.GEOMETRYCOLLECTION, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.INT, 4);
+        DATA_TYPE_SIZE.put(DataTypeName.LINESTRING, 254);
+        DATA_TYPE_SIZE.put(DataTypeName.LONGBLOB, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.LONGTEXT, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.MEDIUMBLOB, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.MEDIUMINT, 3);
+        DATA_TYPE_SIZE.put(DataTypeName.MEDIUMTEXT, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.MULTILINESTRING, 254);
+        DATA_TYPE_SIZE.put(DataTypeName.MULTIPOINT, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.MULTIPOLYGON, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.POINT, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.POLYGON, 255);
+        DATA_TYPE_SIZE.put(DataTypeName.REAL, 5);
+        DATA_TYPE_SIZE.put(DataTypeName.SERIAL, 3);
+        DATA_TYPE_SIZE.put(DataTypeName.SET, 248);
+        DATA_TYPE_SIZE.put(DataTypeName.SMALLINT, 2);
+        DATA_TYPE_SIZE.put(DataTypeName.TEXT, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.TIME, 11);
+        DATA_TYPE_SIZE.put(DataTypeName.TIMESTAMP, 7);
+        DATA_TYPE_SIZE.put(DataTypeName.TINYBLOB, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.TINYINT, 1);
+        DATA_TYPE_SIZE.put(DataTypeName.TINYTEXT, 252);
+        DATA_TYPE_SIZE.put(DataTypeName.VARBINARY, 253);
+        DATA_TYPE_SIZE.put(DataTypeName.VARCHAR, 253);
+        DATA_TYPE_SIZE.put(DataTypeName.YEAR, 13);
+        DATA_TYPE_SIZE.put(DataTypeName.JSON, 245);
+
     }
 
     // BIT[(length)]
@@ -210,6 +258,13 @@ public class DataType implements ASTNode {
             return mapper.get(type);
         }
         return 6;
+    }
+
+    public static Integer getTypeSize(DataTypeName typeName) {
+        if (DATA_TYPE_SIZE.containsKey(typeName)) {
+            return DATA_TYPE_SIZE.get(typeName);
+        }
+        return -1;
     }
 
     public static boolean isBinary(DataTypeName type) {

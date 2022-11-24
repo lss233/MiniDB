@@ -9,7 +9,6 @@ import miniDB.parser.ast.expression.primary.Identifier
 import java.util.function.Predicate
 
 class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<NTuple>) : Relation(columns, tuples.map { it.toArray() }.toMutableList()) {
-
     fun getRelation(alias: String): Relation {
         val ret = clone()
         ret.alias = alias

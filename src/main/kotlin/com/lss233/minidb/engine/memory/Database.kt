@@ -1,6 +1,5 @@
 package com.lss233.minidb.engine.memory
 
-import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier

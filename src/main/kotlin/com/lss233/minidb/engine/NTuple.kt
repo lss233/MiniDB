@@ -3,6 +3,7 @@ package com.lss233.minidb.engine
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
 
+// TODO 这里应当修改成可空，由于add element.vale时，value可能为null，但是这里需要改的东西有些多，还不是很确定，暂时放到这里
 class NTuple : ArrayList<Any>() {
     var columns = ArrayList<Column>()
 
@@ -19,6 +20,7 @@ class NTuple : ArrayList<Any>() {
             if(columns[size] != element.column) {
                 throw RuntimeException("Unable add NTuple[$size], wrong column (columns[$size] = ${columns[size]}, element.column = ${columns[size]})")
             }
+
             super.add(element)
         } else {
             columns.add(element.column)
@@ -27,7 +29,7 @@ class NTuple : ArrayList<Any>() {
     }
 
     /**
-     * 根据列读数据
+     * 根据列读数
      * @param col 列
      * @return 数据
      */
@@ -37,6 +39,7 @@ class NTuple : ArrayList<Any>() {
             .takeIf { it >= 0 } ?: throw RuntimeException("No such column named $col")
         ]
     }
+
     /**
      * 根据列名读数据
      * @param identifier 列名

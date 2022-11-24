@@ -7,6 +7,15 @@ package com.lss233.minidb.engine.config
 class DbStorageConfig {
 
     companion object {
+
+        /**
+         * 表头存储分配空间
+         */
+        const val TABLE_HEADER_SIZE = 16 * 1024
+
+
+        const val PAGE_SIZE = 16 * 1024
+
         /**
          * 记录是否删除标志为
          */

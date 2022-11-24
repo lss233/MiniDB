@@ -17,7 +17,7 @@ class Insert {
     /**
      * 数据列表
      */
-    var dataList = ArrayList<Any>()
+    private var dataList = ArrayList<Any>()
 
     /**
      * 对应的长度列表
@@ -30,36 +30,33 @@ class Insert {
     private var struct: DbTableStruct? = null
 
 
-    fun doInsert(
-        transactionId: Int,
-        dbName: String,
-        tableName: String,
-        dataMap: HashMap<String, Any>
-    ): ByteArray {
-        // 这里假设表的结构是  {#uid，user_name,passwd}
-//        final String dbName    = "test";
-//        final String tableName = "db_user";
-//        final HashMap<String,Object> dataMap = new HashMap<>();
-//        dataMap.put("uid",1);
-//        dataMap.put("user_name","testasdf");
-//        dataMap.put("passwd","test");
-        // TODO 记得清这里的注释
+    /**
+     * 接收SQL语句解析后的
+     * @param transactionId 事务ID
+     * @param dbName 数据库名
+     * @param tableName 表名
+     * @param dataMap 插入的数据
+     */
+    fun doInsert(transactionId: Int, dbName: String, tableName: String, dataMap: HashMap<String, Any>): ByteArray {
 
         // 读取文件数据到内存并获取到指定的表
         val struct = DbStruct.getTableStructByName(dbName, tableName)
 
+        println(DbStruct.getTableStructByName("testDB","testTable"))
+
         this.struct = struct
+
+        // 将数据表中的数据写入到当前局部变量
         nameList = struct!!.fieldNameList
         lenList = struct.fieldLensList
 
-        // 开始赋值 遍历当前操作表中的所有字段，并插入指定的数据
+        // 开始写入插入的数据 遍历当前操作表中的所有字段，并插入指定的数据
         for (i in 0 until struct.fieldNum) {
             // 说明没传这个值 那么插入空
             dataList.add(i, dataMap.getOrDefault(nameList[i], null)!!)
-            // TODO null 如何处理？
         }
 
-        // dataList.add(1); dataList.add("testasdfa"); dataList.add("test");
+        // TODO lenList的处理
         lenList.add(4)
         lenList.add(20)
         lenList.add(25)
@@ -67,8 +64,6 @@ class Insert {
         // 这里结束  下边开始处理业务
         // 总长度 = 表的数据长度 + 数据库存储表头的长度 + 字段长度
         val totalBytes: Int = struct.recordLen + DbStorageConfig.getTotalByteLen() + (struct.fieldNum * 4)
-
-        // 交由构建存储->插入数据
 
         // 交由构建存储->插入数据
         return buildStorageBytes(transactionId, totalBytes, dataMap)
@@ -81,11 +76,7 @@ class Insert {
      * @param data 表数据
      * @return 构建存储的byte流
      */
-    private fun buildStorageBytes(
-        transactionId: Int,
-        totalBytes: Int,
-        data: HashMap<String, Any>
-    ): ByteArray {
+    private fun buildStorageBytes(transactionId: Int, totalBytes: Int, data: HashMap<String, Any>): ByteArray {
         // 存储构建的比特流
         val storageBytes = ByteArray(totalBytes)
 
@@ -103,7 +94,7 @@ class Insert {
         // 这里是跳过了存储文件的头部信息
         var dataLenPos = DbStorageConfig.getTotalByteLen()
         // 这里是跳过字段信息（从这里后全是数据）
-        // TODO 改成从Config中读取长度
+        // TODO 改成从Config中读取长度Insert
         var realDataPos = dataLenPos + nameList.size * 4
         var dataTemp: Any
         // 对存储的数据进行字符转换处理

@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.storage.struct
 
 import com.lss233.minidb.engine.storage.type.StoredType
+import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName
 
 /**
  * 定义字段的实体
@@ -16,7 +17,7 @@ class DbTableField constructor(var filedName: String){
     /**
      * 存储类型
      */
-    var type: StoredType? = null
+    var type: DataTypeName? = null
 
     /**
      * 是否为主键
