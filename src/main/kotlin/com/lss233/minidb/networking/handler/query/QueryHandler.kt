@@ -6,7 +6,9 @@ import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
+import com.lss233.minidb.engine.visitor.InsertStatementVisitor
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
+import com.lss233.minidb.engine.visitor.UpdateStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.*
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
@@ -15,7 +17,10 @@ import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
 import miniDB.parser.ast.stmt.dal.DALSetStatement
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
+import miniDB.parser.ast.stmt.dml.DMLInsertStatement
 import miniDB.parser.ast.stmt.dml.DMLQueryStatement
+import miniDB.parser.ast.stmt.dml.DMLReplaceStatement
+import miniDB.parser.ast.stmt.dml.DMLUpdateStatement
 import java.sql.SQLSyntaxErrorException
 
 class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Query>() {
@@ -34,6 +39,33 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
 
                 // 分析解析后的 SQL 语句，作出不同的反应
                 when(ast) {
+                    is DMLInsertStatement -> {
+                        val visitor = InsertStatementVisitor()
+                        try {
+                            ast.accept(visitor)
+                        } finally {
+                            TraditionalTreePrinter().print(visitor.rootNode)
+                        }
+                        ctx?.writeAndFlush(CommandComplete("INSERT 0 ${visitor.affects}"))?.sync()
+                    }
+                    is DMLReplaceStatement -> {
+                        val visitor = InsertStatementVisitor()
+                        try {
+                            ast.accept(visitor)
+                        } finally {
+                            TraditionalTreePrinter().print(visitor.rootNode)
+                        }
+                        ctx?.writeAndFlush(CommandComplete("SELECT 1"))?.sync()
+                    }
+                    is DMLUpdateStatement -> {
+                        val visitor = UpdateStatementVisitor()
+                        try {
+                            ast.accept(visitor)
+                        } finally {
+                            TraditionalTreePrinter().print(visitor.rootNode)
+                        }
+                        ctx?.writeAndFlush(CommandComplete("UPDATE ${visitor.affects}"))?.sync()
+                    }
                     is DDLCreateTableStatement -> {
                         val visitor = CreateTableStatementVisitor()
                         try {

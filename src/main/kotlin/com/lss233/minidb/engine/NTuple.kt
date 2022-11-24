@@ -47,12 +47,21 @@ class NTuple : ArrayList<Any>() {
     }
 
     /**
-     * 根据列名设置数据
-     * @param colName 列名
+     * 根据列标识符设置数据
+     * @param identifier 列标识符
      * @param value 数据
      */
     operator fun set(identifier: String, `value`: Any){
         this[indexOf(identifier)] = `value`
+    }
+
+    /**
+     * 根据列设置数据
+     * @param column 列
+     * @param value 数据
+     */
+    operator fun set(column: Column, `value`: Any){
+        this[indexOf(column)] = `value`
     }
 
     private fun indexOf(identifier: Identifier): Int {

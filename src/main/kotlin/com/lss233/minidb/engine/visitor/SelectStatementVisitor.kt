@@ -25,9 +25,9 @@ import java.util.function.Predicate
 import kotlin.RuntimeException
 
 
-class SelectStatementVisitor: Visitor() {
-    private var selectedRelation: HashMap<String, Relation> = HashMap();
-    private val stack = Stack<Any>()
+open class SelectStatementVisitor: Visitor() {
+    protected var selectedRelation: HashMap<String, Relation> = HashMap();
+    protected val stack = Stack<Any>()
     var rootNode = SimpleTreeNode("DMLSelectStatement")
     var relation: Relation? = null
     val constantRelation = Relation(mutableListOf(Column("version")), mutableListOf(arrayOf("1.0.0-MINIDB")))

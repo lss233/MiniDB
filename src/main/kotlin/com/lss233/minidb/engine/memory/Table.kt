@@ -4,7 +4,9 @@ import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.schema.Column
+import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.primary.Identifier
+import java.util.function.Predicate
 
 class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<NTuple>) : Relation(columns, tuples.map { it.toArray() }.toMutableList()) {
 
@@ -34,6 +36,19 @@ class Table(val name: String, columns: MutableList<Column>, tuples: MutableList<
         }
         tuples.add(tuple)
         insert(arr.toArray())
+    }
+
+    fun update(cond: Predicate<NTuple>, updated: Array<Cell<Expression>>): Int {
+        var affectsCounter = 0
+        for (tuple in tuples) {
+            if(cond.test(tuple)) {
+                affectsCounter ++
+                for (cell in updated) {
+                    tuple[cell.column] = cell.value
+                }
+            }
+        }
+        return affectsCounter
     }
 
 }
