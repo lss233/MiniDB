@@ -1,6 +1,5 @@
 package miniDB
 
-import com.google.gson.Gson
 import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.schema.Column
@@ -9,11 +8,8 @@ import com.lss233.minidb.engine.storage.executor.Insert
 import com.lss233.minidb.engine.storage.struct.DbStruct
 import com.lss233.minidb.engine.storage.struct.DbTableField
 import com.lss233.minidb.engine.storage.struct.DbTableStruct
-import com.lss233.minidb.engine.storage.struct.TableField
-import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.ColumnDefinition
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
-
 
 fun main() {
 
@@ -54,12 +50,12 @@ fun main() {
     tuples.add(tuple)
     tuples.add(tuple)
 
-    val tempBytes = storageService.buildStorageBytes(tuples)
+    storageService.initStorageService()
 
-    val nTuples = storageService.parserNTupleBytes(tempBytes)
+    storageService.createTable(tuples, dbName = "testDb", tableName = "testTable")
 
-    println(nTuples)
-
+    val res = storageService.getTable(dbName = "testDb", tableName = "testTable")
+    println(res)
 }
 
 fun test(args: Array<String>) {

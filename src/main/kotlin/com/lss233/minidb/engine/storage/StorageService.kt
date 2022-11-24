@@ -20,6 +20,10 @@ class StorageService {
             println("System File Not Found, Initializing...")
             // TODO Create pg_System_tables : User information Table & Table information Table
             FileUtil.mkdir(DBConfig.SYSTEM_FILE)
+
+
+
+
         }
         if (!FileUtil.exist(DBConfig.DATA_FILE)) {
             println("Data File Not Found, Initializing...")
@@ -30,17 +34,17 @@ class StorageService {
     fun getTable(dbName:String,tableName:String): ArrayList<NTuple> {
         // Open Byte File
         // Do One For Pages And Transform EntityCLass
-        return parserNTupleBytes(FileUtil.readBytes(DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX))
+        return parserNTupleBytes(FileUtil.readBytes(DBConfig.DATA_FILE + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX))
     }
 
     fun createTable(nTuples: ArrayList<NTuple>, dbName: String, tableName: String) {
-        if (FileUtil.exist(DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX)) {
+        if (FileUtil.exist(DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX)) {
             throw RuntimeException("ERROR: The table or database has existed.")
         }
-        FileUtil.writeBytes(buildStorageBytes(nTuples), DBConfig.DB_ROOT_PATH + dbName + "\\" + tableName + DBConfig.TABLE_SUFFIX)
+        FileUtil.writeBytes(buildStorageBytes(nTuples), DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX)
     }
 
-    fun buildStorageBytes(nTuples: ArrayList<NTuple>):ByteArray {
+    private fun buildStorageBytes(nTuples: ArrayList<NTuple>):ByteArray {
         val tableHeader = TableHeader()
 
         tableHeader.recordNumber = nTuples.size
@@ -54,19 +58,16 @@ class StorageService {
         // After parsing all columns, we can calculate the length occupied by a column
         val tupleSize = tableHeader.getColumnStorageSize()
 
-        // totalBytes = Table header size + NTuple_Count * (The sum of every type that exist)
-        val totalBytes = DbStorageConfig.TABLE_HEADER_SIZE + nTuples.size * tupleSize
-
-        val storageBytes = ByteArray(totalBytes)
-        // Encoding tableHeader information
-
-        //Gson
+        // totalBytesSize = Table header size + NTuple_Count * (The sum of every type that exist)
+        val totalBytesSize = DbStorageConfig.TABLE_HEADER_SIZE + nTuples.size * tupleSize
+        
+        val storageBytes = ByteArray(totalBytesSize)
+        
+        // Encoding tableHeader information: convert Object to Json
         val gson = Gson()
         val toJson = gson.toJson(tableHeader)
-        println("Gson: toJson ==> $toJson")
         val tableHeaderBytes = toJson.toByteArray(charset("UTF-8"))
-
-
+        
         // mark header size
         ByteUtil.arraycopy(storageBytes, 0, ByteUtil.intToByte4(tableHeaderBytes.size))
 
@@ -149,7 +150,7 @@ class StorageService {
         return gson.fromJson(String(headerByteArray.copyOfRange(4, headerSize + 4), charset("UTF-8")),TableHeader::class.java)
     }
 
-    fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
+    private fun parserNTupleBytes(bytes: ByteArray): ArrayList<NTuple> {
         val nTuples = arrayListOf<NTuple>()
 
         val tableHeader = this.parserTableHeaderBytes(bytes.copyOfRange(0, DbStorageConfig.TABLE_HEADER_SIZE))
