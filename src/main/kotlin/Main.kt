@@ -4,6 +4,7 @@ import com.lss233.minidb.engine.memory.Database
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.memory.Schema
 import com.lss233.minidb.engine.memory.Table
+import com.lss233.minidb.engine.scheduleTask.StorageTask
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
@@ -17,6 +18,7 @@ import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.stmt.dml.DMLSelectStatement
 import miniDB.parser.recognizer.SQLParserDelegate
 import miniDB.parser.visitor.Visitor
+import java.util.*
 import kotlin.system.measureNanoTime
 
 fun main(args: Array<String>) {
@@ -43,6 +45,9 @@ fun main(args: Array<String>) {
         println(visitorXX.relation)
     }
     println("Time elapsed $elapsed nano seconds")
+
+    val task = StorageTask()
+    Timer().schedule(task, Date(), 10000)
 
     val server = NettyServer()
 
