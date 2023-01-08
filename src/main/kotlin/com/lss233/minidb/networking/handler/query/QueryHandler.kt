@@ -5,10 +5,7 @@ import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
-import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
-import com.lss233.minidb.engine.visitor.InsertStatementVisitor
-import com.lss233.minidb.engine.visitor.SelectStatementVisitor
-import com.lss233.minidb.engine.visitor.UpdateStatementVisitor
+import com.lss233.minidb.engine.visitor.*
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.*
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
@@ -17,6 +14,7 @@ import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
 import miniDB.parser.ast.stmt.dal.DALSetStatement
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
+import miniDB.parser.ast.stmt.ddl.DDLDropTableStatement
 import miniDB.parser.ast.stmt.dml.DMLInsertStatement
 import miniDB.parser.ast.stmt.dml.DMLQueryStatement
 import miniDB.parser.ast.stmt.dml.DMLReplaceStatement
@@ -75,6 +73,14 @@ class QueryHandler(private val session: Session) : SimpleChannelInboundHandler<Q
                             TraditionalTreePrinter().print(visitor.rootNode)
                         }
                         ctx?.writeAndFlush(CommandComplete("SELECT 1"))?.sync()
+                    }
+                    is DDLDropTableStatement -> {
+                        val statement = ast as DDLDropTableStatement
+                        for(tableName in statement.tableNames) {
+                            Engine[session.properties["database"] ?: "minidb"].dropTable(tableName)
+                        }
+
+                        ctx?.writeAndFlush(CommandComplete("DELETE 1"))?.sync()
                     }
                     is DMLQueryStatement -> {
                         val relation: Relation? = if(queryString.lowercase() == "select version()") {

@@ -194,4 +194,13 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 
     }
 
+    fun dropTable(identifier: Identifier) {
+        val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
+
+        if(!schema.tables.containsKey(identifier.idText)) {
+            throw RuntimeException("Table ${identifier.idText} not exist.")
+        }
+        schema.tables.remove(identifier.idText)
+    }
+
 }
