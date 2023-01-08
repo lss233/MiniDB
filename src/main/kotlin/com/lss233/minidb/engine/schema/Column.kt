@@ -67,4 +67,8 @@ class Column {
     fun defaultValue(): Any? {
         return null
     }
+
+    override fun toString(): String {
+        return "Column: $identifier"
+    }
 }
