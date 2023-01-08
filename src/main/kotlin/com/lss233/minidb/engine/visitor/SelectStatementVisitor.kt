@@ -9,10 +9,14 @@ import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
 import miniDB.parser.ast.expression.comparison.ComparisionGreaterThanExpression
 import miniDB.parser.ast.expression.comparison.ComparisionIsExpression
+import miniDB.parser.ast.expression.logical.LogicalAndExpression
 import miniDB.parser.ast.expression.logical.LogicalOrExpression
 import miniDB.parser.ast.expression.primary.Identifier
+import miniDB.parser.ast.expression.primary.function.FunctionExpression
+import miniDB.parser.ast.expression.primary.function.cast.Cast
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
+import miniDB.parser.ast.expression.type.CastBinaryExpression
 import miniDB.parser.ast.fragment.tableref.InnerJoin
 import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.fragment.tableref.TableRefFactor
@@ -167,7 +171,24 @@ open class SelectStatementVisitor: Visitor() {
         parentNode.addChild(rootNode)
         rootNode = parentNode
     }
+    override fun visit(node: LogicalAndExpression) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Expression(operator='${node.operator}')")
 
+        var cond: Predicate<NTuple>? = null
+        for (i in 0 until node.arity) {
+            node.getOperand(i).accept(this)
+            val oprand = stack.pop() as Predicate<NTuple>
+            cond = if(cond == null) {
+                oprand
+            } else {
+                cond.and(oprand)
+            }
+        }
+        stack.push(cond)
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
     override fun visit(node: LogicalOrExpression) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("Expression(operator='${node.operator}')")
@@ -196,6 +217,8 @@ open class SelectStatementVisitor: Visitor() {
         val leftIdentifier = when(node.leftOprand) {
             is Identifier ->
                 stack.pop() as String
+            is FunctionExpression ->
+                stack.pop()
             else ->
                 node.leftOprand
         }
@@ -204,6 +227,8 @@ open class SelectStatementVisitor: Visitor() {
         val rightIdentifier = when(node.rightOprand) {
             is Identifier ->
                 stack.pop() as String
+            is FunctionExpression ->
+                stack.pop()
             else ->
                 node.rightOprand
         }
@@ -322,6 +347,17 @@ open class SelectStatementVisitor: Visitor() {
     override fun visit(node: LiteralString) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("LiteralString('${node.unescapedString}')")
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+
+    override fun visit(node: Cast) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Cast(typeName=${node.typeName})")
+        for(arg in node.arguments) {
+            arg.accept(this)
+        }
+        stack.push((node.arguments[0] as LiteralString))
         parentNode.addChild(rootNode)
         rootNode = parentNode
     }
