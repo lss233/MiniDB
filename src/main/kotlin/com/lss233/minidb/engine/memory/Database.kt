@@ -3,6 +3,7 @@ package com.lss233.minidb.engine.memory
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
+import miniDB.parser.ast.fragment.ddl.datatype.DataType
 import kotlin.collections.HashMap
 import kotlin.concurrent.getOrSet
 
@@ -62,60 +63,75 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         val pgCatalogSchema = createSchema("pg_catalog")
 
         pgCatalogSchema["pg_database"] = Table("pg_database", mutableListOf(
-            Column("oid"), Column("datname"), Column("datdba"), Column("encoding"),
-            Column("datlocprovider"), Column("datistemplate"), Column("datallowconn"),
-            Column("datconnlimit"), Column("dattablespace"), Column("datcollate"),
-            Column("datctype"), Column("datacl")
+            Column("oid", DataType.DataTypeName.INT), Column("datname", DataType.DataTypeName.CHAR), Column("datdba", DataType.DataTypeName.CHAR),
+            Column("encoding", DataType.DataTypeName.CHAR), Column("datlocprovider", DataType.DataTypeName.CHAR),
+            Column("datistemplate", DataType.DataTypeName.CHAR), Column("datallowconn", DataType.DataTypeName.CHAR),
+            Column("datconnlimit", DataType.DataTypeName.CHAR), Column("dattablespace", DataType.DataTypeName.CHAR),
+            Column("datcollate", DataType.DataTypeName.CHAR), Column("datctype", DataType.DataTypeName.CHAR),
+            Column("datacl", DataType.DataTypeName.CHAR)
         ), mutableListOf())
 
         pgCatalogSchema["pg_namespace"] = Table("pg_namespace", mutableListOf(
-                Column("oid"), Column("nspname"), Column("nspower"), Column("nspacl")
+                Column("oid", DataType.DataTypeName.INT), Column("nspname", DataType.DataTypeName.CHAR),
+                Column("nspower", DataType.DataTypeName.CHAR), Column("nspacl", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("pg_catalog", "pg_catalog", "10", "{postgres=UC/postgres,=U/postgres}"),
                 NTuple.from("public", "public", "10", "{postgres=UC/postgres,=U/postgres}"),
             )
         )
         pgCatalogSchema["pg_tablespace"]  = Table("pg_tablespace", mutableListOf(
-                Column("oid"), Column("spcname"), Column("spcowner"), Column("spcacl"), Column("spcoptions")
+                Column("oid", DataType.DataTypeName.INT), Column("spcname", DataType.DataTypeName.CHAR),
+                Column("spcowner", DataType.DataTypeName.CHAR), Column("spcacl", DataType.DataTypeName.CHAR),
+                Column("spcoptions", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("1", "default_tablespace", "1", "", "")
             )
         )
 
         pgCatalogSchema["pg_settings"]  = Table("pg_settings", mutableListOf(
-                Column("set_config('bytea_output','hex',false)"), Column("name")
+                Column("set_config('bytea_output','hex',false)", DataType.DataTypeName.CHAR), Column("name", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("1", "bytea_output")
             )
         )
         pgCatalogSchema["pg_type"]  = Table("pg_type", mutableListOf(
-                Column("oid"), Column("typname"), Column("typnamespace"), Column("typowner"),
-                Column("typlen"), Column("typbyval"), Column("typtype"), Column("typcategory"), Column("typdelim"),
-                Column("typndims")
+                Column("oid", DataType.DataTypeName.INT), Column("typname", DataType.DataTypeName.CHAR),
+                Column("typnamespace", DataType.DataTypeName.CHAR), Column("typowner", DataType.DataTypeName.CHAR),
+                Column("typlen", DataType.DataTypeName.CHAR), Column("typbyval", DataType.DataTypeName.CHAR),
+                Column("typtype", DataType.DataTypeName.CHAR), Column("typcategory", DataType.DataTypeName.CHAR),
+                Column("typdelim", DataType.DataTypeName.CHAR), Column("typndims", DataType.DataTypeName.CHAR)
             ), mutableListOf()
         )
         pgCatalogSchema["pg_class"]  = Table("pg_class", mutableListOf(
-                Column("oid"), Column("relname"), Column("relnamespace"), Column("reltype"),
-                Column("reloftype"), Column("relowner"), Column("relam"), Column("relfilenode"), Column("reltablespace"),
-                Column("relkind")
+                Column("oid", DataType.DataTypeName.INT), Column("relname", DataType.DataTypeName.CHAR),
+                Column("relnamespace", DataType.DataTypeName.CHAR), Column("reltype", DataType.DataTypeName.CHAR),
+                Column("reloftype", DataType.DataTypeName.CHAR), Column("relowner", DataType.DataTypeName.CHAR),
+                Column("relam", DataType.DataTypeName.CHAR), Column("relfilenode", DataType.DataTypeName.CHAR),
+                Column("reltablespace", DataType.DataTypeName.CHAR), Column("relkind", DataType.DataTypeName.CHAR)
             ), mutableListOf()
         )
 
         pgCatalogSchema["pg_attribute"]  = Table("pg_attribute", mutableListOf(
-                Column("attrelid"), Column("attname"), Column("atttypid"), Column("attstattarget"),
-                Column("attlen"), Column("attnum"), Column("attndims"), Column("attcacheoff"), Column("attbyval")
+                Column("attrelid", DataType.DataTypeName.INT), Column("attname", DataType.DataTypeName.CHAR),
+                Column("atttypid", DataType.DataTypeName.INT), Column("attstattarget", DataType.DataTypeName.CHAR),
+                Column("attlen", DataType.DataTypeName.CHAR), Column("attnum", DataType.DataTypeName.CHAR),
+                Column("attndims", DataType.DataTypeName.CHAR), Column("attcacheoff", DataType.DataTypeName.CHAR),
+                Column("attbyval", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("1", "bytea_output")
             )
         )
         pgCatalogSchema["pg_inherits"] = Table("pg_inherits", mutableListOf(
-                Column("inhrelid"), Column("inhparent"), Column("inhseqno")
+                Column("inhrelid", DataType.DataTypeName.INT), Column("inhparent", DataType.DataTypeName.CHAR),
+                Column("inhseqno", DataType.DataTypeName.CHAR)
         ), mutableListOf())
 
         pgCatalogSchema["pg_index"] = Table("pg_index", mutableListOf(
-            Column("indexrelid"), Column("indrelid"), Column("indnatts")
+            Column("indexrelid", DataType.DataTypeName.INT), Column("indrelid", DataType.DataTypeName.INT),
+            Column("indnatts", DataType.DataTypeName.CHAR)
         ), mutableListOf())
 
+        // TODO other task
         pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server", mutableListOf(), mutableListOf())
         pgCatalogSchema["pg_roles"] = Table("pg_roles", mutableListOf(), mutableListOf())
@@ -129,18 +145,25 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 
         val informationSchema = createSchema("information_schema")
         informationSchema["routines"] = Table("routines", mutableListOf(
-            Column("specific_schema"), Column("specific_name"), Column("routine_catalog"), Column("routine_schema"),
-            Column("routine_name"), Column("routine_type"), Column("module_catalog"), Column("data_type")
+            Column("specific_schema", DataType.DataTypeName.CHAR), Column("specific_name", DataType.DataTypeName.CHAR),
+            Column("routine_catalog", DataType.DataTypeName.CHAR), Column("routine_schema", DataType.DataTypeName.CHAR),
+            Column("routine_name", DataType.DataTypeName.CHAR), Column("routine_type", DataType.DataTypeName.CHAR),
+            Column("module_catalog", DataType.DataTypeName.CHAR), Column("data_type", DataType.DataTypeName.CHAR)
         ), mutableListOf())
         informationSchema["parameters"] = Table("parameters", mutableListOf(
-            Column("specific_schema"), Column("specific_name"), Column("routine_catalog"), Column("ordinal_position"),
-            Column("parameter_mode"), Column("is_result"), Column("as_locator"), Column("parameter_name"), Column("data_type")
+            Column("specific_schema", DataType.DataTypeName.CHAR), Column("specific_name", DataType.DataTypeName.CHAR),
+            Column("routine_catalog", DataType.DataTypeName.CHAR), Column("ordinal_position", DataType.DataTypeName.CHAR),
+            Column("parameter_mode", DataType.DataTypeName.CHAR), Column("is_result", DataType.DataTypeName.CHAR),
+            Column("as_locator", DataType.DataTypeName.CHAR), Column("parameter_name", DataType.DataTypeName.CHAR),
+            Column("data_type", DataType.DataTypeName.CHAR)
         ), mutableListOf())
 
         informationSchema["tables"] = Table("tables", mutableListOf(), mutableListOf())
         informationSchema["columns"] = Table("columns", mutableListOf(
-            Column("table_catalog"), Column("table_schema"), Column("table_name"), Column("column_name"), Column("ordinal_position"),
-            Column("udt_catalog"), Column("udt_schema"), Column("udt_name")
+            Column("table_catalog", DataType.DataTypeName.CHAR), Column("table_schema", DataType.DataTypeName.CHAR),
+            Column("table_name", DataType.DataTypeName.CHAR), Column("column_name", DataType.DataTypeName.CHAR),
+            Column("ordinal_position", DataType.DataTypeName.CHAR), Column("udt_catalog", DataType.DataTypeName.CHAR),
+            Column("udt_schema", DataType.DataTypeName.CHAR), Column("udt_name", DataType.DataTypeName.CHAR)
         ), mutableListOf())
 
         // 以用户身份执行以下建表语句

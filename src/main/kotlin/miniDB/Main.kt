@@ -2,6 +2,7 @@ package miniDB
 
 import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.storage.StorageService
 import com.lss233.minidb.engine.storage.executor.Insert
@@ -10,6 +11,7 @@ import com.lss233.minidb.engine.storage.struct.DbTableField
 import com.lss233.minidb.engine.storage.struct.DbTableStruct
 import miniDB.parser.ast.fragment.ddl.ColumnDefinition
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
+import java.io.File
 
 fun main() {
 
@@ -51,11 +53,9 @@ fun main() {
     tuples.add(tuple)
 
     storageService.initStorageService()
+    val databases = storageService.getDatabaseList()
 
-//    storageService.createTable(tuples, dbName = "testDb", tableName = "testTable")
-
-//    val res = storageService.getTable(dbName = "testDb", tableName = "testTable")
-//    println(res)
+    Engine.loadStorageData()
 }
 
 fun test(args: Array<String>) {

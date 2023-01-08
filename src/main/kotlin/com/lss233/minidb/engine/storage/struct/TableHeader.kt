@@ -5,7 +5,7 @@ import miniDB.parser.ast.fragment.ddl.datatype.DataType
 
 class TableHeader constructor(val tableName: String) {
 
-    // TODO recode user & other basic info
+    // TODO recode user & other basic info ?
 
     /**
      * 行数记录
@@ -13,7 +13,7 @@ class TableHeader constructor(val tableName: String) {
     var recordNumber: Int = 0
 
 
-    var columns = arrayListOf<Column>()
+    var columns = mutableListOf<Column>()
 
     fun addColumn(column: Column) {
         this.columns.add(column)

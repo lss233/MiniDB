@@ -1,12 +1,14 @@
 package com.lss233.minidb.engine.scheduleTask
 
+import com.lss233.minidb.engine.memory.Engine
 import java.util.*
 
 
 class StorageTask : TimerTask() {
 
     override fun run() {
-        println("schedule task ===>")
+        println("save action")
+        Engine.dataStorage()
     }
 
 }

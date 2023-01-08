@@ -11,6 +11,7 @@ import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.storage.struct.TableHeader
 import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName.*
+import java.io.File
 import java.lang.RuntimeException
 
 class StorageService {
@@ -37,6 +38,37 @@ class StorageService {
         return parserTableBytes(FileUtil.readBytes(filePath))
     }
 
+    fun getDatabaseList():MutableList<String> {
+        val databaseList: MutableList<String> = mutableListOf()
+
+        val databaseTree: FileTreeWalk = File(DBConfig.DATA_FILE).walk()
+        databaseTree.maxDepth(1)
+            .filter { it.isDirectory }
+            .filter { it.name!="Data" }
+            .forEach { databaseList.add(it.name) }
+        return databaseList
+    }
+
+    fun getSchemaList(databaseName: String):MutableList<String> {
+        val schemaList: MutableList<String> = mutableListOf()
+        val schemaTree: FileTreeWalk = File(DBConfig.DATA_FILE + databaseName).walk()
+        schemaTree
+            .filter { it.isDirectory }
+            .filter { it.name!= databaseName }
+            .forEach { schemaList.add(it.name) }
+        return schemaList
+    }
+
+    fun getTableList(databaseName: String, schemaName: String):MutableList<String> {
+        val tableList:MutableList<String> = mutableListOf()
+        val tableTree:FileTreeWalk = File(DBConfig.DATA_FILE + databaseName + "\\" + schemaName + "\\").walk()
+        tableTree
+            .filter { it.isFile }
+            .filter { it.extension == "tb" }
+            .forEach { tableList.add(it.name) }
+        return tableList
+    }
+
     fun createTable(table:Table, dbName: String, tableName: String) {
         val filePath = DBConfig.DATA_FILE + dbName + "\\"+ tableName + DBConfig.TABLE_SUFFIX
         if (FileUtil.exist(filePath)) {
@@ -58,9 +90,9 @@ class StorageService {
         val tableHeader = TableHeader(tableName = table.name)
 
         tableHeader.recordNumber = table.tuples.size
-        // Basic the columns form the table header info.
 
-        tableHeader.columns = table.columns as ArrayList<Column>
+        // Basic the columns form the table header info.
+        tableHeader.columns = table.columns
 
         // After parsing all columns, we can calculate the length occupied by a column
         val tupleSize = tableHeader.getColumnStorageSize()
@@ -87,7 +119,9 @@ class StorageService {
         for (tuple in table.tuples) {
             // order by table header
             for (column in tableHeader.columns) {
-                val dataTemp = tuple[Column(column.name)]
+                println("bbb" + column.name)
+
+                val dataTemp = tuple[column]
                 when(column.definition.dataType.typeName!!) {
                     INT -> {
                         dataTemp as Cell<*>
@@ -95,30 +129,30 @@ class StorageService {
                         realDataPos += 4
                     }
                     GEOMETRY -> TODO()
-                    POINT -> TODO()
-                    LINESTRING -> TODO()
-                    POLYGON -> TODO()
-                    MULTIPOINT -> TODO()
-                    MULTILINESTRING -> TODO()
-                    GEOMETRYCOLLECTION -> TODO()
-                    MULTIPOLYGON -> TODO()
-                    BIT -> TODO()
-                    TINYINT -> TODO()
-                    SMALLINT -> TODO()
-                    MEDIUMINT -> TODO()
-                    BIGINT -> TODO()
-                    REAL -> TODO()
-                    DOUBLE -> TODO()
-                    FLOAT -> TODO()
-                    DECIMAL -> TODO()
-                    DATE -> TODO()
-                    TIME -> TODO()
-                    TIMESTAMP -> TODO()
-                    DATETIME -> TODO()
-                    YEAR -> TODO()
-                    CHAR -> {
-                        dataTemp as Cell<*>
-                        val str = dataTemp.value.toString().toByteArray(charset("UTF-8"))
+                        POINT -> TODO()
+                        LINESTRING -> TODO()
+                        POLYGON -> TODO()
+                        MULTIPOINT -> TODO()
+                        MULTILINESTRING -> TODO()
+                        GEOMETRYCOLLECTION -> TODO()
+                        MULTIPOLYGON -> TODO()
+                        BIT -> TODO()
+                        TINYINT -> TODO()
+                        SMALLINT -> TODO()
+                        MEDIUMINT -> TODO()
+                        BIGINT -> TODO()
+                        REAL -> TODO()
+                        DOUBLE -> TODO()
+                        FLOAT -> TODO()
+                        DECIMAL -> TODO()
+                        DATE -> TODO()
+                        TIME -> TODO()
+                        TIMESTAMP -> TODO()
+                        DATETIME -> TODO()
+                        YEAR -> TODO()
+                        CHAR -> {
+                            dataTemp as Cell<*>
+                            val str = dataTemp.value.toString().toByteArray(charset("UTF-8"))
                         val strByteSize = str.size
                         // mark the length of chars
                         ByteUtil.arraycopy(storageBytes, realDataPos, ByteUtil.intToByte4(strByteSize))

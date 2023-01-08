@@ -2,6 +2,8 @@ package com.lss233.minidb.engine.schema
 
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.fragment.ddl.ColumnDefinition
+import miniDB.parser.ast.fragment.ddl.datatype.DataType
+import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName
 
 /**
  * 进行关系运算过滤中的封装列的信息实体
@@ -25,6 +27,19 @@ class Column {
     constructor(id: Identifier, definition: ColumnDefinition): this(id) {
         this.definition = definition
     }
+
+    /**
+     * test constructor
+     */
+    constructor(name: String, typeName: DataTypeName) {
+        this.identifier = Identifier(null, name)
+        this.name = name
+        this.definition = ColumnDefinition(
+            DataType(typeName,  true, true, true,null,null,null,null,null),
+            true,null,true,null,null,null,null,null,true,true,null
+        )
+    }
+
     constructor(name: String) {
         this.identifier = Identifier(null, name)
         this.name = name

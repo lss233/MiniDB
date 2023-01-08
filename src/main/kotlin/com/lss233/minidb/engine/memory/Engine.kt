@@ -4,6 +4,7 @@ import com.lss233.minidb.engine.Cell
 import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.schema.Column
+import com.lss233.minidb.engine.storage.StorageService
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
@@ -15,6 +16,8 @@ object Engine {
     val systemSession: Session = Session()
     private val databases = HashMap<String, Database>()
     val session = ThreadLocal<Session>()
+
+    private val storageService = StorageService()
 
     init {
         systemSession.properties["database"] = "minidb"
@@ -91,4 +94,47 @@ object Engine {
         }
     }
 
+    fun loadStorageData() {
+        val databaseList = storageService.getDatabaseList()
+        if (databaseList.isEmpty()) {
+            // TODO init storage service
+        }
+        // get the databaseList
+        for (database in databaseList) {
+
+            val tempDatabase = Database(database,10,1,'c',true,-1)
+            // base on the database name to get the schemas
+            val schemaList = storageService.getSchemaList(database)
+            for (schema in schemaList) {
+                val tempSchema = Schema(schemaName = schema)
+                // base on the schema name to get the tables
+                val tableList = storageService.getTableList(database, schema)
+                for (table in tableList) {
+                    tempSchema[table] = storageService.getTable(dbName = database, tableName = table, schemaName = schema)
+                }
+                tempDatabase[schema] = tempSchema
+            }
+            this.databases[database] = tempDatabase
+        }
+    }
+
+    // is temp
+    fun dataStorage() {
+        // When the system data table has been created
+        for (database in this.databases) {
+            // create database
+            for (schema in database.value.schemas) {
+                // TODO should be change
+                if (schema.key == "pg_catalog" || schema.key == "information_schema") {
+                    continue
+                }
+                // mark the schema to the table
+                for (table in schema.value.tables) {
+                    // mark the table
+                    println("aaaaaaaaa " + table.value.columns[0].name)
+                    storageService.updateOrSaveTable(tableName = table.key, dbName = database.key, schemaName = schema.key, table = table.value)
+                }
+            }
+        }
+    }
 }
