@@ -114,28 +114,40 @@ open class SelectStatementVisitor: Visitor() {
         parentNode.addChild(rootNode)
         rootNode = parentNode
     }
+
+    /**
+     * 访问 OuterJoin 结点时进行的操作
+     * 外连接
+     */
     override fun visit(node: OuterJoin) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("OuterJoin(leftJoin=${node.isLeftJoin})")
 
+        // 访问左表
         node.leftTableRef.accept(this)
+        // 得到左表对象
         val leftTable = stack.pop() as Relation
+        // 保存别名
         leftTable.alias?.let { run { selectedRelation[it] = leftTable }}
 
+        // 访问右表
         node.rightTableRef.accept(this)
+        // 得到右表对象
         val rightTable = stack.pop() as Relation
+        // 保存别名
         rightTable.alias?.let { run { selectedRelation[it] = rightTable }}
 
-
-        stack.push(node)  // Pass outerJoin parameters.
+        // 访问条件
         node.onCond.accept(this)
+        // 得到条件 Predicate
         val cond = stack.pop() as Predicate<NTuple>
-
+        // 对左表进行外连接操作
         val result = leftTable.outerJoin(rightTable, node.isLeftJoin, cond)
         node.alias?.let {
             run {
             selectedRelation[it.idText] = result
         } }
+        // 将结果压入栈中，交由上一级结点处理
         stack.push(result)
 
         parentNode.addChild(rootNode)

@@ -47,13 +47,15 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
         return Relation(projectColumn, projectRow)
     }
 
-    /**
-     * 选择算子
-     * 保留列信息，筛选行
-     */
-    infix fun select(cond: Predicate<NTuple>): Relation {
-        return Relation(columns, tuples.filter { i -> cond.test(i) }.map{ it.toArray() }.toMutableList())
-    }
+/**
+ * 选择算子
+ * 保留列信息，筛选行
+ */
+infix fun select(cond: Predicate<NTuple>): Relation =
+     Relation(columns, tuples.filter { i -> cond.test(i) }
+        .map{ it.toArray() }
+        .toMutableList())
+
 
     /**
      * 投影算子
@@ -78,23 +80,23 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
         return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
     }
 
-    fun innerJoin(relation: Relation, condition: Predicate<NTuple>): Relation {
-        val columns = columns.map { i -> if (alias == null) i else Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
-        columns.addAll(relation.columns.map { i -> if (relation.alias == null) i else Column(Identifier(Identifier(null, relation.alias), i.name)) })
-        val rows = ArrayList<NTuple>()
-        for(leftRow in tuples) {
-            for(rightRow in relation.tuples) {
-                val tuple = NTuple()
-                tuple.columns = arrayListOf(*columns.toTypedArray())
-                tuple.addAll(leftRow)
-                tuple.addAll(rightRow)
-                if(condition.test(tuple)) {
-                    rows.add(tuple)
-                }
+fun innerJoin(relation: Relation, condition: Predicate<NTuple>): Relation {
+    val columns = columns.map { i -> if (alias == null) i else Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
+    columns.addAll(relation.columns.map { i -> if (relation.alias == null) i else Column(Identifier(Identifier(null, relation.alias), i.name)) })
+    val rows = ArrayList<NTuple>()
+    for(leftRow in tuples) {
+        for(rightRow in relation.tuples) {
+            val tuple = NTuple()
+            tuple.columns = arrayListOf(*columns.toTypedArray())
+            tuple.addAll(leftRow)
+            tuple.addAll(rightRow)
+            if(condition.test(tuple)) {
+                rows.add(tuple)
             }
         }
-        return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
     }
+    return Relation(columns.toMutableList(), rows.map { it.toArray() }.toMutableList());
+}
     fun outerJoin(relation: Relation, leftJoin: Boolean, condition: Predicate<NTuple>): Relation {
         val columns = columns.map { i -> if (alias == null) i else Column(Identifier(Identifier(null, alias), i.name)) }.toMutableList()
         columns.addAll(relation.columns.map { i -> if (relation.alias == null) i else Column(Identifier(Identifier(null, relation.alias), i.name)) })

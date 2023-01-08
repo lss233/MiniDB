@@ -1,2 +1,2 @@
 # MiniDB
-A lightweight database implementation on kotlin.
+A lightweight database implementation in kotlin, written as a learning project.

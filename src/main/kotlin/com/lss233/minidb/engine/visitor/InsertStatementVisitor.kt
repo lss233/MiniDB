@@ -23,7 +23,7 @@ class InsertStatementVisitor: Visitor() {
 
     override fun visit(node: DMLInsertStatement) {
         val table = Engine[node.table];
-        val columns = node.columnNameList.map { identifier -> Column(identifier) }
+        val columns = node.columnNameList?.map { identifier -> Column(identifier) } ?: table.columns
         node.rowList.forEach { row -> run {
             affects++
             table.insert(NTuple.from(
