@@ -88,11 +88,16 @@ open class SelectStatementVisitor: Visitor() {
     override fun visit(node: TableReferences) {
         val parentNode = rootNode
         rootNode = SimpleTreeNode("* tables")
-
+        var relation: Relation? = null
         for (tableReference in node.tableReferenceList) {
             tableReference.accept(this)
+            relation = if(relation == null) {
+                stack.pop() as Relation
+            } else {
+                relation.outerJoin(stack.pop() as Relation, true, Predicate { true })
+            }
         }
-
+        stack.push(relation)
         parentNode.addChild(rootNode)
         rootNode = parentNode
     }
