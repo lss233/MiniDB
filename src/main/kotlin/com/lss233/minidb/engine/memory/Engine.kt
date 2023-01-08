@@ -10,6 +10,7 @@ import com.lss233.minidb.networking.Session
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
+import java.util.*
 import kotlin.collections.HashMap
 
 object Engine {
@@ -22,6 +23,12 @@ object Engine {
     init {
         systemSession.properties["database"] = "minidb"
     }
+
+    /**
+     * Gets all databases loaded in current Engine
+     * @return Copy of loaded databases
+     */
+    fun getDatabase(): Map<String, Database> = Collections.unmodifiableMap(databases)
 
     fun execute(sql: String): Any? {
         when(val ast = SQLParser.parse(sql)) {
@@ -39,7 +46,7 @@ object Engine {
         }
         return null
     }
-    operator fun get(identifier: Identifier) : Table {
+    operator fun get(identifier: Identifier) : View {
         val db = databases[session.get()?.properties?.get("database") ?: "minidb"] ?: throw RuntimeException("Database not exists.")
         val schema = if(identifier.parent == null) {
             db["pg_catalog"]
@@ -68,30 +75,7 @@ object Engine {
 
         // Create db schema
         db.createSchema("public")
-
-        registerDatabase(db)
         return db
-    }
-
-    private fun registerDatabase(db: Database) {
-        for(item in databases.values) {
-            item["pg_catalog"]["pg_database"].insert(
-                NTuple.from(
-                    Cell(Column("oid"), "3"),
-                    Cell(Column("datname"), db.name),
-                    Cell(Column("datdba"), "1"),
-                    Cell(Column("encoding"), "1"),
-                    Cell(Column("datlocprovider"), 'c'),
-                    Cell(Column("datistemplate"), "true"),
-                    Cell(Column("datallowconn"), "true"),
-                    Cell(Column("datconnlimit"), -1),
-                    Cell(Column("dattablespace"), "1"),
-                    Cell(Column("datcollate"), "1"),
-                    Cell(Column("datctype"), "1"),
-                    Cell(Column("datacl"), "[]")
-                )
-            )
-        }
     }
 
     fun loadStorageData() {
@@ -131,8 +115,9 @@ object Engine {
                 // mark the schema to the table
                 for (table in schema.value.tables) {
                     // mark the table
-                    println("aaaaaaaaa " + table.value.columns[0].name)
-                    storageService.updateOrSaveTable(tableName = table.key, dbName = database.key, schemaName = schema.key, table = table.value)
+                    if(table.value is Table) {
+                        storageService.updateOrSaveTable(tableName = table.key, dbName = database.key, schemaName = schema.key, table = table.value as Table)
+                    }
                 }
             }
         }

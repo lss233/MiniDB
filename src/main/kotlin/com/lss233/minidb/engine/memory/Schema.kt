@@ -3,11 +3,16 @@ package com.lss233.minidb.engine.memory
 import java.util.concurrent.ConcurrentHashMap
 
 class Schema(schemaName: String) {
-    val tables = ConcurrentHashMap<String, Table>()
+    val views = ConcurrentHashMap<String, View>()
+
+    operator fun set(name: String, view: View) {
+        views[name] = view
+    }
+
     operator fun set(name: String, table: Table) {
-        tables[name] = table
+        views[name] = table
     }
-    operator fun get(name: String) : Table {
-        return tables[name] ?: throw RuntimeException("Table $name does not exist.")
-    }
+    operator fun get(name: String) : View
+        = views[name] ?: throw RuntimeException("View $name does not exist.")
+
 }

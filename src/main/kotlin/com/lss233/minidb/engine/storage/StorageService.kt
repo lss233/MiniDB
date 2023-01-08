@@ -88,11 +88,12 @@ class StorageService {
 
     private fun buildStorageBytes(table: Table):ByteArray {
         val tableHeader = TableHeader(tableName = table.name)
+        val relation = table.getRelation()
 
-        tableHeader.recordNumber = table.tuples.size
+        tableHeader.recordNumber = relation.tuples.size
 
         // Basic the columns form the table header info.
-        tableHeader.columns = table.columns
+        tableHeader.columns = relation.columns
 
         // After parsing all columns, we can calculate the length occupied by a column
         val tupleSize = tableHeader.getColumnStorageSize()
@@ -116,7 +117,7 @@ class StorageService {
         var realDataPos = DbStorageConfig.TABLE_HEADER_SIZE
 
         // copy body info
-        for (tuple in table.tuples) {
+        for (tuple in relation.tuples) {
             // order by table header
             for (column in tableHeader.columns) {
                 println("bbb" + column.name)

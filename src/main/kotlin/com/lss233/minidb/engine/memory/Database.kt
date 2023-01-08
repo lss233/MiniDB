@@ -1,6 +1,10 @@
 package com.lss233.minidb.engine.memory
 
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.memory.internal.catalog.*
+import com.lss233.minidb.engine.memory.internal.information.ColumnsView
+import com.lss233.minidb.engine.memory.internal.information.ParametersView
+import com.lss233.minidb.engine.memory.internal.information.RoutinesView
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
@@ -13,8 +17,8 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     fun createTable(table: Table, identifier: Identifier): Database {
         val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
 
-        if(schema.tables.containsKey(table.name)) {
-            throw RuntimeException("Table ${table.name} already exists.")
+        if(schema.views.containsKey(table.name)) {
+            throw RuntimeException("View or Table with name ${table.name} already exists.")
         }
 
         schema[table.name] = table
@@ -220,10 +224,10 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     fun dropTable(identifier: Identifier) {
         val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
 
-        if(!schema.tables.containsKey(identifier.idText)) {
-            throw RuntimeException("Table ${identifier.idText} not exist.")
+        if(!schema.views.containsKey(identifier.idText)) {
+            throw RuntimeException("View or Table with name ${identifier.idText} does not exist.")
         }
-        schema.tables.remove(identifier.idText)
+        schema.views.remove(identifier.idText)
     }
 
 }
