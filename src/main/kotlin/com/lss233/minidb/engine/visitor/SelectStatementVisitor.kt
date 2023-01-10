@@ -9,6 +9,7 @@ import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.comparison.ComparisionEqualsExpression
 import miniDB.parser.ast.expression.comparison.ComparisionGreaterThanExpression
 import miniDB.parser.ast.expression.comparison.ComparisionIsExpression
+import miniDB.parser.ast.expression.comparison.ComparisionLessOrGreaterThanExpression
 import miniDB.parser.ast.expression.logical.LogicalAndExpression
 import miniDB.parser.ast.expression.logical.LogicalOrExpression
 import miniDB.parser.ast.expression.primary.Identifier
@@ -273,6 +274,45 @@ open class SelectStatementVisitor: Visitor() {
                 operand
             }
             operandVal != null
+        })
+
+        parentNode.addChild(rootNode)
+        rootNode = parentNode
+    }
+    override fun visit(node: ComparisionLessOrGreaterThanExpression) {
+        val parentNode = rootNode
+        rootNode = SimpleTreeNode("Expression(operator='${node.operator}', leftCombine=${node.isLeftCombine})")
+
+        // 为了保证访问一致性，都得 visit
+        node.leftOprand.accept(this)
+        val leftIdentifier = when(node.leftOprand) {
+            is Identifier ->
+                stack.pop() as String
+            else ->
+                node.leftOprand
+        }
+
+        node.rightOprand.accept(this)
+        val rightIdentifier = when(node.rightOprand) {
+            is Identifier ->
+                stack.pop() as String
+            else ->
+                node.rightOprand
+        }
+
+        stack.push(Predicate<NTuple> { t: NTuple ->
+            val leftValue = if(leftIdentifier is String) {
+                (t[node.leftOprand as Identifier] as Cell<*>).value
+            } else {
+                leftIdentifier
+            }
+            val rightValue = if(rightIdentifier is String) {
+                (t[node.rightOprand as Identifier] as Cell<*>).value
+            } else {
+                rightIdentifier
+            }
+
+            leftValue != rightValue
         })
 
         parentNode.addChild(rootNode)

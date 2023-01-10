@@ -1,8 +1,8 @@
 package com.lss233.minidb.networking.codec
 
-import com.lss233.minidb.networking.MessageType
+import com.lss233.minidb.networking.packets.postgres.MessageType
 import com.lss233.minidb.networking.Session
-import com.lss233.minidb.networking.packets.OutgoingPacket
+import com.lss233.minidb.networking.packets.postgres.OutgoingPacket
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext

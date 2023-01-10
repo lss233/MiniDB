@@ -736,6 +736,16 @@ public class MySQLExprParser extends MySQLParser {
                 }
                 tempExpr = expression();
                 switch (lexer.token()) {
+                    case PUNC_COLON:
+                        lexer.nextToken(); // :
+                        if (lexer.token() == PUNC_COLON) { // :
+                            lexer.nextToken(); // name
+                            if (lexer.token() != IDENTIFIER) {
+                                throw err("unexpected token: " + lexer.token());
+                            }
+                            lexer.nextToken();
+                        }
+                        // NO break
                     case PUNC_RIGHT_PAREN:
                         lexer.nextToken();
                         return tempExpr;

@@ -19,6 +19,7 @@ dependencies {
     implementation("hu.webarticum:tree-printer:2.1.0")
     implementation("cn.hutool:hutool-all:5.8.9")
     implementation("com.google.code.gson:gson:2.10")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
     testImplementation(kotlin("test"))
 }
 

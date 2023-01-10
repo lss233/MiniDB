@@ -12,7 +12,7 @@ class NettyServer {
     private lateinit var bossGroup: EventLoopGroup
     private lateinit var workerGroup: EventLoopGroup
 
-    var port = 5432
+    var port = 3306
 
     fun start() {
         object : Thread() {
@@ -28,7 +28,7 @@ class NettyServer {
                         .childOption(ChannelOption.SO_KEEPALIVE, true)
                         .childOption(ChannelOption.SO_REUSEADDR, true)
                         .childOption(ChannelOption.TCP_NODELAY, true)
-                        .childHandler(NettyServerInitializer())
+                        .childHandler(MySQLProtocolInitializer())
 
                     // Bind and start to accept incoming connections.
                     val f = b.bind().sync()
