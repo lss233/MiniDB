@@ -1,8 +1,6 @@
 package com.lss233.minidb.networking.utils
 
 import io.netty.buffer.ByteBuf
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
 
 class MySQLBufWrapper(val buf: ByteBuf) {
@@ -120,6 +118,11 @@ class MySQLBufWrapper(val buf: ByteBuf) {
     }
 
     fun writeStringEOF(str: String) {
+        buf.writeCharSequence(str, StandardCharsets.UTF_8)
+    }
+
+    fun writeStringFixedLength(str: String, length: Int) {
+        assert(str.length == length)
         buf.writeCharSequence(str, StandardCharsets.UTF_8)
     }
 

@@ -8,6 +8,7 @@ enum class MessageType(val type: Byte, val `class`: KClass<out MySQLPacket>) {
     HandshakeResponsePacket(0, HandshakeResponse41::class),
     COM_INIT_DB(0x02, ChangeDatabase::class),
     COM_QUERY(0x03, RequestQuery::class),
+    COM_FIELD_LIST(0x04, RequestShowFields::class),
     ;
 
 

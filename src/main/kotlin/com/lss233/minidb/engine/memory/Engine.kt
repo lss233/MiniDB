@@ -7,6 +7,7 @@ import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.storage.StorageService
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
+import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
@@ -47,13 +48,21 @@ object Engine {
         return null
     }
     operator fun get(identifier: Identifier) : View {
-        val db = databases[session.get()?.properties?.get("database") ?: "minidb"] ?: throw RuntimeException("Database not exists.")
-        val schema = if(identifier.parent == null) {
-            db["pg_catalog"]
+        if (session.get() is MySQLSession) {
+            val db = databases[session.get()?.database ?: error("No database selected.")]
+                ?: error("Database not exists.")
+            val schema = db["public"]
+            return schema[identifier.idText]
         } else {
-            db[identifier.parent.idText]
+            val db = databases[session.get()?.properties?.get("database") ?: "minidb"] ?: throw RuntimeException("Database not exists.")
+            val schema = if(identifier.parent == null) {
+                db["pg_catalog"]
+            } else {
+                db[identifier.parent.idText]
+            }
+            return schema[identifier.idText]
         }
-        return schema[identifier.idText]
+
     }
 
     operator fun get(dbName: String): Database {
@@ -113,7 +122,7 @@ object Engine {
                     continue
                 }
                 // mark the schema to the table
-                for (table in schema.value.tables) {
+                for (table in schema.value.views.filter { (_, view) -> view is Table}) {
                     // mark the table
                     if(table.value is Table) {
                         storageService.updateOrSaveTable(tableName = table.key, dbName = database.key, schemaName = schema.key, table = table.value as Table)

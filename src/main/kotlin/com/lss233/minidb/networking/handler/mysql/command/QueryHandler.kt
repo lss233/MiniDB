@@ -15,15 +15,14 @@ import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import miniDB.parser.ast.expression.primary.SysVarPrimary
-import miniDB.parser.ast.stmt.dal.DALSetStatement
-import miniDB.parser.ast.stmt.dal.ShowDatabases
-import miniDB.parser.ast.stmt.dal.ShowVariables
+import miniDB.parser.ast.stmt.dal.*
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import miniDB.parser.ast.stmt.ddl.DDLDropTableStatement
 import miniDB.parser.ast.stmt.dml.DMLInsertStatement
 import miniDB.parser.ast.stmt.dml.DMLQueryStatement
 import miniDB.parser.ast.stmt.dml.DMLReplaceStatement
 import miniDB.parser.ast.stmt.dml.DMLUpdateStatement
+import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
 
 class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<RequestQuery>() {
@@ -49,7 +48,7 @@ class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<Reque
                         } finally {
                             TraditionalTreePrinter().print(visitor.rootNode)
                         }
-//                        ctx?.writeAndFlush(CommandComplete("INSERT 0 ${visitor.affects}"))?.sync()
+                        ctx?.writeAndFlush(OKPacket())?.sync()
                     }
                     is DMLReplaceStatement -> {
                         val visitor = InsertStatementVisitor()
@@ -127,6 +126,25 @@ class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<Reque
                         println(relation)
                         ctx?.writeAndFlush(relation)?.sync()
                     }
+                    is ShowTables -> {
+                        // 查表
+                        val relation = Relation(mutableListOf(
+                            Column("Tables"),
+                        ),
+                            Engine[session.database!!].schemas["public"]?.views?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
+                        )
+                        println(relation)
+                        ctx?.writeAndFlush(relation)?.sync()
+                    }
+                    is ShowTableStatus -> {
+                        val relation = Relation(mutableListOf(
+                            Column("Tables"),
+                        ),
+                            Engine[session.database!!].schemas["public"]?.views?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
+                        )
+                        println(relation)
+                        ctx?.writeAndFlush(relation)?.sync()
+                    }
                     is DALSetStatement -> {
                         // 这是一条设置语句
                         for (pair in ast.assignmentList) {
@@ -161,18 +179,21 @@ class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<Reque
         System.err.println(" Q(Error): ${cause?.message}")
         cause?.printStackTrace()
         // 告诉客户端你发的东西有问题
-        TODO("exceptionCaught not implemented")
-//        val err = ErrorResponse()
-//        err.message = cause?.message.toString()
-//        err.file = cause?.stackTrace?.get(0)?.fileName
-//        err.line = cause?.stackTrace?.get(0)?.lineNumber
-//        err.routine = cause?.stackTrace?.get(0)?.methodName
-//        if(cause is SQLSyntaxErrorException) {
-//            err.sqlStateCode = cause.sqlState ?: "50000"
-//            val positionRegex = "curIndex=\\d+".toRegex()
-//            err.position =  positionRegex.find(cause.message ?: "curIndex=0")?.value ?: "1"
-//        }
-//        ctx?.writeAndFlush(err)?.sync()
+        val err = if (cause is SQLException)
+            ERRPacket(
+                errorCode = cause.errorCode,
+                sqlState = cause.sqlState,
+                sqlStateMarker = "1",
+                errorMessage = cause.message.toString()
+            )
+        else
+            ERRPacket(
+                errorCode = 10000,
+                sqlState = "12345",
+                sqlStateMarker = "1",
+                errorMessage = cause?.message.toString(),
+            )
+        ctx?.writeAndFlush(err)?.sync()
 //        ctx?.writeAndFlush(ReadyForQuery())?.sync()
     }
 

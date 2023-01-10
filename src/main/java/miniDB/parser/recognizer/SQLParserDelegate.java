@@ -285,7 +285,7 @@ public final class SQLParserDelegate {
         try {
             return parse(lexer, charset, false);
         } catch (Exception e) {
-            throw new SQLSyntaxErrorException(buildErrorMsg(e, lexer, sql), e);
+            throw new SQLSyntaxErrorException(buildErrorMsg(e, lexer, sql), "42000", e);
         }
     }
 

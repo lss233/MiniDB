@@ -3,6 +3,7 @@ package com.lss233.minidb.networking
 import com.lss233.minidb.networking.codec.MySQLDecoder
 import com.lss233.minidb.networking.codec.MySQLEncoder
 import com.lss233.minidb.networking.codec.RelationToMySQLEncoder
+import com.lss233.minidb.networking.handler.mysql.command.ShowFieldsHandler
 import com.lss233.minidb.networking.handler.mysql.command.ChangeDatabaseHandler
 import com.lss233.minidb.networking.handler.mysql.command.QueryHandler
 import com.lss233.minidb.networking.handler.mysql.handshake.InitialHandshakeHandler
@@ -23,6 +24,8 @@ class MySQLProtocolInitializer() : ChannelInitializer<SocketChannel>() {
         pipeline.addLast(InitialHandshakeHandler(session))
         pipeline.addLast(QueryHandler(session))
         pipeline.addLast(ChangeDatabaseHandler(session))
+        pipeline.addLast(ShowFieldsHandler(session))
+
         val serverCapability = CapabilitiesFlags.of(
             CapabilitiesFlags.CLIENT_LONG_PASSWORD,
             CapabilitiesFlags.CLIENT_FOUND_ROWS,

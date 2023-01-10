@@ -24,9 +24,10 @@ class InitialHandshakeHandler(val session: MySQLSession): SimpleChannelInboundHa
         session.clientFlags = session.clientFlags and msg?.clientFlag!!
         session.state = Session.State.Query
         session.packetSequenceId = -1
+        session.database = msg.database
         println("Client connected with following capabilities:")
         for (capability in CapabilitiesFlags.getCapabilities(session.clientFlags)) {
-            println(capability.name)
+            println("\t" + capability.name)
         }
     }
 
