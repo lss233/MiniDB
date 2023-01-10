@@ -78,6 +78,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         pgCatalogSchema["pg_attribute"]  = AttributeView(this)
         pgCatalogSchema["pg_index"] = IndexView(this)
         pgCatalogSchema["pg_opclass"] = OpclassView(this)
+        pgCatalogSchema["pg_rewrite"] = RewriteView(this)
 
         // TODO other task
         pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table", mutableListOf(), mutableListOf())
