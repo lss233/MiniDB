@@ -20,7 +20,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
 
     // use Integer/Float etc for primitive types
 
-    var strColLocalId: ArrayList<Int>? = null // ID of string columns (in local Id, not the id from the whole table)
+    var strColLocalId: ArrayList<Int>? = null // ID of string columns (in local ID, not the id from the whole table)
 
     init {
         for (each in types) {
@@ -88,6 +88,10 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         return finalValue
     }
 
+    // >= op
+    fun ge(key1: ArrayList<Any>, key2: ArrayList<Any>): Boolean {
+        return compare(key1, key2, { x: Int, y: Int -> x > y }, true)
+    }
 
     // > op
     fun gt(key1: ArrayList<Any>, key2: ArrayList<Any>): Boolean {
@@ -110,11 +114,11 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
     }
 
     // == op
-    fun eq(key1: java.util.ArrayList<Any>, key2: ArrayList<Any>): Boolean {
+    fun eq(key1: ArrayList<Any>, key2: ArrayList<Any>): Boolean {
         return !neq(key1, key2)
     }
 
-    fun writeKey(r: ByteBuffer, key: java.util.ArrayList<Any>) {
+    fun writeKey(r: ByteBuffer, key: ArrayList<Any>) {
         padKey(key)
         for (j in types.indices) {
             if (types[j] === Int::class.java) {

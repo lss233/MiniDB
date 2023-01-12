@@ -17,7 +17,7 @@ import java.util.*
  */
 @Suppress("unused")
 class TreeLeaf constructor (
-    private var nextPagePointer: Long, private var prevPagePointer: Long,
+    var nextPagePointer: Long, var prevPagePointer: Long,
     nodeType: TreeNodeType, pageIndex: Long
 ) : TreeNode(nodeType, pageIndex) {
 
