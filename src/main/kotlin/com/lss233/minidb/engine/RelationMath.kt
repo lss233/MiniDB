@@ -1,7 +1,5 @@
 package com.lss233.minidb.engine
 
-import com.lss233.minidb.engine.schema.Column
-
 class RelationMath {
     companion object {
 //        fun cartesianProduct(vararg sets: Pair<Column, Set<Any>>): Relation =

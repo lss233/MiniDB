@@ -6,14 +6,12 @@ import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
 import hu.webarticum.treeprinter.SimpleTreeNode
-import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
 import miniDB.parser.ast.stmt.dml.DMLInsertStatement
 import miniDB.parser.ast.stmt.dml.DMLReplaceStatement
 import miniDB.parser.visitor.Visitor
 import java.util.*
-import kotlin.math.exp
 
 class InsertStatementVisitor: Visitor() {
     private val stack = Stack<Any>()

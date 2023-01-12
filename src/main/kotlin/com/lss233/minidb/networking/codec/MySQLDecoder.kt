@@ -1,7 +1,8 @@
 package com.lss233.minidb.networking.codec
 
 import com.lss233.minidb.networking.Session
-import com.lss233.minidb.networking.packets.mysql.*
+import com.lss233.minidb.networking.packets.mysql.IncomingPacket
+import com.lss233.minidb.networking.packets.mysql.MessageType
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import com.lss233.minidb.networking.utils.MySQLBufWrapper
 import io.netty.buffer.ByteBuf

@@ -8,7 +8,6 @@ import com.lss233.minidb.engine.memory.internal.information.RoutinesView
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
-import kotlin.collections.HashMap
 import kotlin.concurrent.getOrSet
 
 class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int) {

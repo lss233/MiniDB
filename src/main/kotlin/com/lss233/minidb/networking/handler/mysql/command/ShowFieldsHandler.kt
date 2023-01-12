@@ -1,7 +1,7 @@
 package com.lss233.minidb.networking.handler.mysql.command
 
-import com.lss233.minidb.networking.packets.mysql.RequestShowFields
 import com.lss233.minidb.networking.packets.mysql.OKPacket
+import com.lss233.minidb.networking.packets.mysql.RequestShowFields
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler

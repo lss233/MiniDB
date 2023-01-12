@@ -12,7 +12,6 @@ import com.lss233.minidb.engine.storage.struct.TableHeader
 import com.lss233.minidb.utils.ByteUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType.DataTypeName.*
 import java.io.File
-import java.lang.RuntimeException
 
 class StorageService {
 

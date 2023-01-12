@@ -1,6 +1,5 @@
 package com.lss233.minidb.networking.packets.mysql
 
-import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.networking.protocol.mysql.CapabilitiesFlags
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import com.lss233.minidb.networking.utils.MySQLBufWrapper

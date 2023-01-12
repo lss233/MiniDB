@@ -16,7 +16,6 @@
  */
 package miniDB.parser.ast.expression.primary.literal;
 
-import com.lss233.minidb.engine.Cell;
 import miniDB.parser.visitor.Visitor;
 import org.jetbrains.annotations.NotNull;
 

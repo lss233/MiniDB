@@ -3,9 +3,9 @@ package com.lss233.minidb.networking
 import com.lss233.minidb.networking.codec.MySQLDecoder
 import com.lss233.minidb.networking.codec.MySQLEncoder
 import com.lss233.minidb.networking.codec.RelationToMySQLEncoder
-import com.lss233.minidb.networking.handler.mysql.command.ShowFieldsHandler
 import com.lss233.minidb.networking.handler.mysql.command.ChangeDatabaseHandler
 import com.lss233.minidb.networking.handler.mysql.command.QueryHandler
+import com.lss233.minidb.networking.handler.mysql.command.ShowFieldsHandler
 import com.lss233.minidb.networking.handler.mysql.handshake.InitialHandshakeHandler
 import com.lss233.minidb.networking.packets.mysql.HandshakeV10
 import com.lss233.minidb.networking.protocol.mysql.CapabilitiesFlags

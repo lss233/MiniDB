@@ -1,9 +1,7 @@
 package com.lss233.minidb.engine.memory.internal.catalog
 
-import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.memory.Database
 import com.lss233.minidb.engine.memory.Engine
-import com.lss233.minidb.engine.memory.View
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
 

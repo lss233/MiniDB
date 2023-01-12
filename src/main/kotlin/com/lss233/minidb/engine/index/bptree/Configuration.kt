@@ -20,7 +20,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
 
     // use Integer/Float etc for primitive types
 
-    var strColLocalId: ArrayList<Int>? = null // ID of string columns (in local ID, not the id from the whole table)
+    var strColLocalId: ArrayList<Int>   // ID of string columns (in local ID, not the id from the whole table)
 
     init {
         for (each in types) {
@@ -32,7 +32,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         this.strColLocalId = ArrayList()
         for (i in types.indices) {
             if (types[i] === String::class.java) {
-                this.strColLocalId!!.add(i)
+                this.strColLocalId.add(i)
             }
         }
         this.keySize = 0
@@ -50,10 +50,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
     ): Boolean {
         for (j in types.indices) {
             if (types[j] === Int::class.java) {
-                val ans = Integer.compare(
-                    (key1[j] as Int),
-                    (key2[j] as Int)
-                )
+                val ans = (key1[j] as Int).compareTo((key2[j] as Int))
                 if (ans == 0) {
                     continue
                 }
@@ -137,7 +134,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
 
     @Throws(IOException::class)
     fun readKey(r: ByteBuffer): ArrayList<Any> {
-        val key = java.util.ArrayList(listOf(*arrayOf<Any>(types.size)))
+        val key = ArrayList(listOf(*arrayOf<Any>(types.size)))
         for (j in types.indices) {
             if (types[j] === Int::class.java) {
                 key[j] = r.int
@@ -196,8 +193,8 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         } else arg + String(CharArray(nBytes - size)).replace('\u0000', ' ')
     }
 
-    fun padKey(key: java.util.ArrayList<Any>): ArrayList<Any> {
-        for (i in strColLocalId!!) {
+    fun padKey(key: ArrayList<Any>): ArrayList<Any> {
+        for (i in strColLocalId) {
             key[i] = padString(key[i] as String, sizes[i])
         }
         return key

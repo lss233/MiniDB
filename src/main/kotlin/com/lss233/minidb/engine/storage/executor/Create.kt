@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil
 import com.lss233.minidb.engine.config.DBConfig
 import com.lss233.minidb.engine.config.DbStorageConfig
 import com.lss233.minidb.engine.storage.struct.DbTableField
-import com.lss233.minidb.engine.storage.type.StoredType
 import com.lss233.minidb.engine.storage.type.TypeLen
 import com.lss233.minidb.utils.TypeUtil
 import miniDB.parser.ast.fragment.ddl.datatype.DataType

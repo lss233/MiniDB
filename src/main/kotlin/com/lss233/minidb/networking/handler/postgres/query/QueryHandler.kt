@@ -4,7 +4,10 @@ import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Engine
 import com.lss233.minidb.engine.schema.Column
-import com.lss233.minidb.engine.visitor.*
+import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
+import com.lss233.minidb.engine.visitor.InsertStatementVisitor
+import com.lss233.minidb.engine.visitor.SelectStatementVisitor
+import com.lss233.minidb.engine.visitor.UpdateStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.postgres.*
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter

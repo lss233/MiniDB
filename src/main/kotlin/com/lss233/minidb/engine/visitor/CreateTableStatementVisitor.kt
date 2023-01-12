@@ -1,11 +1,9 @@
 package com.lss233.minidb.engine.visitor
 
-import com.lss233.minidb.engine.Relation
 import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.engine.schema.Column
 import hu.webarticum.treeprinter.SimpleTreeNode
 import miniDB.parser.ast.expression.primary.Identifier
-import miniDB.parser.ast.fragment.ddl.ColumnDefinition
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import miniDB.parser.visitor.Visitor
 import java.util.*

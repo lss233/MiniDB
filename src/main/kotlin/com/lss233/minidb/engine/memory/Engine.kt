@@ -1,9 +1,6 @@
 package com.lss233.minidb.engine.memory
 
-import com.lss233.minidb.engine.Cell
-import com.lss233.minidb.engine.NTuple
 import com.lss233.minidb.engine.SQLParser
-import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.engine.storage.StorageService
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
@@ -12,7 +9,6 @@ import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
 import java.util.*
-import kotlin.collections.HashMap
 
 object Engine {
     val systemSession: Session = Session()

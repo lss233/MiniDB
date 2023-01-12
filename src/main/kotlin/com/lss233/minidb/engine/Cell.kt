@@ -3,7 +3,6 @@ package com.lss233.minidb.engine
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
-import java.lang.IllegalArgumentException
 
 /**
  * 行式存储结构中的单体数据(单元格数据)

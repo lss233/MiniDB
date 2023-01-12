@@ -21,7 +21,6 @@ import miniDB.parser.ast.expression.Expression;
 import miniDB.parser.ast.expression.primary.Identifier;
 import miniDB.parser.visitor.Visitor;
 
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.List;
 

@@ -1,6 +1,5 @@
 package com.lss233.minidb.engine.storage.struct
 
-import com.lss233.minidb.engine.config.DBConfig
 import com.lss233.minidb.engine.storage.type.StoredType
 
 class DbTableStruct {

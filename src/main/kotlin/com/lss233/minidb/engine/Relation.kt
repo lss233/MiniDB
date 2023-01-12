@@ -2,13 +2,8 @@ package com.lss233.minidb.engine
 
 import com.lss233.minidb.engine.schema.Column
 import com.lss233.minidb.utils.ConsoleTableBuilder
-import miniDB.parser.ast.expression.Expression
 import miniDB.parser.ast.expression.primary.Identifier
-import java.util.*
-import java.util.function.BiPredicate
 import java.util.function.Predicate
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /**
  * 关系

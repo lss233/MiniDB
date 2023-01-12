@@ -17,7 +17,6 @@ import miniDB.parser.ast.expression.primary.function.FunctionExpression
 import miniDB.parser.ast.expression.primary.function.cast.Cast
 import miniDB.parser.ast.expression.primary.literal.LiteralNumber
 import miniDB.parser.ast.expression.primary.literal.LiteralString
-import miniDB.parser.ast.expression.type.CastBinaryExpression
 import miniDB.parser.ast.fragment.tableref.InnerJoin
 import miniDB.parser.ast.fragment.tableref.OuterJoin
 import miniDB.parser.ast.fragment.tableref.TableRefFactor
@@ -27,7 +26,6 @@ import miniDB.parser.ast.stmt.dml.DMLSelectUnionStatement
 import miniDB.parser.visitor.Visitor
 import java.util.*
 import java.util.function.Predicate
-import kotlin.RuntimeException
 
 
 open class SelectStatementVisitor: Visitor() {

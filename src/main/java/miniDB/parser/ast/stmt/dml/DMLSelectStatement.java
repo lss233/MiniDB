@@ -24,7 +24,6 @@ import miniDB.parser.ast.fragment.tableref.TableReferences;
 import miniDB.parser.util.Pair;
 import miniDB.parser.visitor.Visitor;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

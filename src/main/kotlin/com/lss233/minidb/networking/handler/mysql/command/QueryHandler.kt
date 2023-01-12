@@ -9,7 +9,9 @@ import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.engine.visitor.InsertStatementVisitor
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.engine.visitor.UpdateStatementVisitor
-import com.lss233.minidb.networking.packets.mysql.*
+import com.lss233.minidb.networking.packets.mysql.ERRPacket
+import com.lss233.minidb.networking.packets.mysql.OKPacket
+import com.lss233.minidb.networking.packets.mysql.RequestQuery
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import io.netty.channel.ChannelHandlerContext

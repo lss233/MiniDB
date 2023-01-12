@@ -1,6 +1,5 @@
 package com.lss233.minidb.networking.codec
 
-import com.lss233.minidb.networking.packets.postgres.MessageType
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.packets.postgres.*
 import io.netty.buffer.ByteBuf
