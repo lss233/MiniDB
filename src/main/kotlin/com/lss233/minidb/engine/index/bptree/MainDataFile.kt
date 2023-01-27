@@ -15,13 +15,12 @@ class MainDataFile(
     filePath: String, var rowID2position: BPlusTree
 ) {
     private val file: RandomAccessFile
-    private val freeSlots: TreeSet<Long> // each element reflects a free slot
+    private val freeSlots: TreeSet<Long> = TreeSet() // each element reflects a free slot
     var elementCount = 0L   // number of elements
         private set
     private var totalPages = 1L    // number of pages in the file, can be counted from file length
 
     init {
-        freeSlots = TreeSet()
         val f = File(filePath)
         val stmode = mode.substring(0, 2)
         file = RandomAccessFile(filePath, stmode)
@@ -58,7 +57,7 @@ class MainDataFile(
 
     @get:Throws(IOException::class)
     private val firstAvailablePageIndex: Long
-        private get() {
+        get() {
             // check if we have unused pages
             if (freeSlots.size == 0) { // file length == conf.pageSize * totalPages, allocate new pages
                 val ALLOCATE_NEW_PAGES = 10L
@@ -72,7 +71,7 @@ class MainDataFile(
             return freeSlots.pollFirst()
         }
 
-    fun insertRow(key: ArrayList<Any>, rowID: Long) {
+    fun insertRow(key: ArrayList<Any?>, rowID: Long) {
         val position = firstAvailablePageIndex
         file.seek(position)
         val buffer = ByteArray(conf.pageSize)
@@ -112,7 +111,7 @@ class MainDataFile(
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    fun updateRow(rowID: Long, newKey: ArrayList<Any>) {
+    fun updateRow(rowID: Long, newKey: ArrayList<Any?>) {
         val position: Long = rowID2position.search(ArrayList<Any>(listOf(rowID)))[0]
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
@@ -140,7 +139,7 @@ class MainDataFile(
 
     // linear scan
     @Throws(IOException::class)
-    fun searchRows(pred: Function<SearchResult?, Boolean>): LinkedList<SearchResult> {
+    fun searchRows(pred: Function<SearchResult?, Boolean?>): LinkedList<SearchResult> {
         val length = file.length()
         val positions = LongArray(length.toInt() / conf.pageSize)
         var index = 0
@@ -164,7 +163,7 @@ class MainDataFile(
             val each = SearchResult()
             each.rowID = bbuffer.long
             each.key = conf.readKey(bbuffer)
-            if (pred.apply(each)) {
+            if (pred.apply(each) == true) {
                 ans.add(each)
             }
         }

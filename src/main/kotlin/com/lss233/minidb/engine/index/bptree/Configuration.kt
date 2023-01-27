@@ -115,7 +115,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         return !neq(key1, key2)
     }
 
-    fun writeKey(r: ByteBuffer, key: ArrayList<Any>) {
+    fun writeKey(r: ByteBuffer, key: ArrayList<Any?>) {
         padKey(key)
         for (j in types.indices) {
             if (types[j] === Int::class.java) {
@@ -193,7 +193,7 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         } else arg + String(CharArray(nBytes - size)).replace('\u0000', ' ')
     }
 
-    fun padKey(key: ArrayList<Any>): ArrayList<Any> {
+    fun padKey(key: ArrayList<Any?>): ArrayList<Any?> {
         for (i in strColLocalId) {
             key[i] = padString(key[i] as String, sizes[i])
         }
