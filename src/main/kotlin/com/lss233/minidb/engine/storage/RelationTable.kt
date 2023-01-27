@@ -16,8 +16,11 @@ import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
+ * TODO 需要合并到 memory 当中的 Table 与 engine 当中的 Relation
  * 关系表，存储表的文件单体
- * 封装了BPTree索引
+ * 封装了BPTree索引, 一些基本操作封装在这一实体当中
+ * 当进行插入、更新、删除等操作时调用这里的方法，
+ * 调用后能够对应的修改索引文件
  */
 class RelationTable {
 
