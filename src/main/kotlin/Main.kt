@@ -1,10 +1,8 @@
 import com.lss233.minidb.engine.SQLParser
 import com.lss233.minidb.engine.memory.Engine
-import com.lss233.minidb.engine.scheduleTask.StorageTask
 import com.lss233.minidb.engine.visitor.SelectStatementVisitor
 import com.lss233.minidb.networking.NettyServer
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
-import java.util.*
 import kotlin.system.measureNanoTime
 
 fun main() {
@@ -31,9 +29,6 @@ fun main() {
         println(visitorXX.relation)
     }
     println("Time elapsed $elapsed nano seconds")
-
-    val task = StorageTask()
-    Timer().schedule(task, Date(), 10000)
 
     val server = NettyServer()
 

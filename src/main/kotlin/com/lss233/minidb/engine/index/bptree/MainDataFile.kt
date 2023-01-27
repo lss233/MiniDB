@@ -72,7 +72,7 @@ class MainDataFile(
             return freeSlots.pollFirst()
         }
 
-    fun insertRow(key: ArrayList<Any>, rowID: Long) {
+    fun insertRow(key: ArrayList<Any?>, rowID: Long) {
         val position = firstAvailablePageIndex
         file.seek(position)
         val buffer = ByteArray(conf.pageSize)
@@ -112,7 +112,7 @@ class MainDataFile(
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    fun updateRow(rowID: Long, newKey: ArrayList<Any>) {
+    fun updateRow(rowID: Long, newKey: ArrayList<Any?>) {
         val position: Long = rowID2position.search(ArrayList<Any>(listOf(rowID)))[0]
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
@@ -140,7 +140,7 @@ class MainDataFile(
 
     // linear scan
     @Throws(IOException::class)
-    fun searchRows(pred: Function<SearchResult?, Boolean>): LinkedList<SearchResult> {
+    fun searchRows(pred: Function<SearchResult?, Boolean?>): LinkedList<SearchResult> {
         val length = file.length()
         val positions = LongArray(length.toInt() / conf.pageSize)
         var index = 0
@@ -164,7 +164,7 @@ class MainDataFile(
             val each = SearchResult()
             each.rowID = bbuffer.long
             each.key = conf.readKey(bbuffer)
-            if (pred.apply(each)) {
+            if (pred.apply(each) == true) {
                 ans.add(each)
             }
         }
