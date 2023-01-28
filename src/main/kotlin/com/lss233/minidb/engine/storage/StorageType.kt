@@ -5,5 +5,7 @@ enum class StorageType {
     Long,
     Float,
     String,
-    Double
+    Double,
+    Bool,
+    Unknown
 }

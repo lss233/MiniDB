@@ -1,8 +1,8 @@
 package com.lss233.minidb.engine.index.bptree
 
-import com.lss233.minidb.engine.storage.StorageType
+import java.lang.reflect.Type
 
-class MainDataConfiguration(types: ArrayList<StorageType>, sizes: ArrayList<Int>, colIDs: ArrayList<Int>):
+class MainDataConfiguration(types: ArrayList<Type>, sizes: ArrayList<Int>, colIDs: ArrayList<Int>):
     Configuration(0, types, sizes, colIDs) {
 
     var nValidPointerInFreePage: Int

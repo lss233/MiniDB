@@ -1,7 +1,8 @@
 package com.lss233.minidb.engine.index.bptree
 
-import com.lss233.minidb.engine.storage.StorageType
+import com.lss233.minidb.exception.MiniDBException
 import java.io.IOException
+import java.lang.reflect.Type
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -14,7 +15,7 @@ import java.util.function.BiFunction
  * @param sizes size of each key type (in bytes)
  * @param colIDs ID of each column
  */
-open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, var sizes: ArrayList<Int>, var colIDs: ArrayList<Int>) {
+open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var sizes: ArrayList<Int>, var colIDs: ArrayList<Int>) {
 
     var keySize = 0 // key size (in bytes)
 
@@ -24,14 +25,16 @@ open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, v
 
     init {
         for (each in types) {
-            if (each != StorageType.Int && each != StorageType.Long && each != StorageType.Float && each != StorageType.Double && each != StorageType.String) {
-                // TODO Throw Exception
-                throw RuntimeException("UnknownColumnType")
+            if (each != java.lang.Integer::class.java && each != java.lang.Long::class.java
+                && each != java.lang.String::class.java && each != java.lang.Float::class.java
+                && each != java.lang.Double::class.java) {
+                throw MiniDBException(String.format(MiniDBException.UnknownColumnType, each))
             }
+
         }
         this.strColLocalId = ArrayList()
         for (i in types.indices) {
-            if (types[i] == StorageType.String) {
+            if (types[i] == java.lang.String::class.java) {
                 this.strColLocalId.add(i)
             }
         }
@@ -49,31 +52,31 @@ open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, v
         finalValue: Boolean
     ): Boolean {
         for (j in types.indices) {
-            if (types[j] == StorageType.Int) {
+            if (types[j] == java.lang.Integer::class.java) {
                 val ans = (key1[j] as Int).compareTo((key2[j] as Int))
                 if (ans == 0) {
                     continue
                 }
                 return func.apply(ans, 0)
-            } else if (types[j] == StorageType.Long) {
+            } else if (types[j] == java.lang.Long::class.java) {
                 val ans = (key1[j] as Long).compareTo((key2[j] as Long))
                 if (ans == 0) {
                     continue
                 }
                 return func.apply(ans, 0)
-            } else if (types[j] == StorageType.Float) {
+            } else if (types[j] == java.lang.Float::class.java) {
                 val ans = (key1[j] as Float).compareTo((key2[j] as Float))
                 if (ans == 0) {
                     continue
                 }
                 return func.apply(ans, 0)
-            } else if (types[j] == StorageType.Double) {
+            } else if (types[j] == java.lang.Double::class.java) {
                 val ans = (key1[j] as Double).compareTo((key2[j] as Double))
                 if (ans == 0) {
                     continue
                 }
                 return func.apply(ans, 0)
-            } else if (types[j] == StorageType.String) {
+            } else if (types[j] == java.lang.String::class.java) {
                 val ans = (key1[j] as String).compareTo((key2[j] as String))
                 if (ans == 0) {
                     continue
@@ -118,15 +121,15 @@ open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, v
     fun writeKey(r: ByteBuffer, key: ArrayList<Any?>) {
         padKey(key)
         for (j in types.indices) {
-            if (types[j] === StorageType.Int) {
+            if (types[j] == java.lang.Integer::class.java) {
                 r.putInt((key[j] as Int))
-            } else if (types[j] == StorageType.Long) {
+            } else if (types[j] == java.lang.Long::class.java) {
                 r.putLong((key[j] as Long))
-            } else if (types[j] == StorageType.Float) {
+            } else if (types[j] == java.lang.Float::class.java) {
                 r.putFloat((key[j] as Float))
-            } else if (types[j] == StorageType.Double) {
+            } else if (types[j] == java.lang.Double::class.java) {
                 r.putDouble((key[j] as Double))
-            } else if (types[j] == StorageType.String) {
+            } else if (types[j] == java.lang.String::class.java) {
                 r.put((key[j] as String).toByteArray(StandardCharsets.UTF_8))
             }
         }
@@ -136,15 +139,15 @@ open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, v
     fun readKey(r: ByteBuffer): ArrayList<Any?> {
         val key = ArrayList(listOf(*arrayOf<Any?>(types.size)))
         for (j in types.indices) {
-            if (types[j] == StorageType.Int) {
+            if (types[j] == java.lang.Integer::class.java) {
                 key[j] = r.int
-            } else if (types[j] == StorageType.Long) {
+            } else if (types[j] == java.lang.Long::class.java) {
                 key[j] = r.long
-            } else if (types[j] == StorageType.Float) {
+            } else if (types[j] == java.lang.Float::class.java) {
                 key[j] = r.float
-            } else if (types[j] == StorageType.Double) {
+            } else if (types[j] == java.lang.Double::class.java) {
                 key[j] = r.double
-            } else if (types[j] == StorageType.String) {
+            } else if (types[j] == java.lang.String::class.java) {
                 //TODO possible not efficient. buffer is copied into the string?
                 val buffer = ByteArray(sizes[j])
                 r[buffer, 0, sizes[j]]
@@ -162,19 +165,19 @@ open class Configuration(var pageSize: Int, var types: ArrayList<StorageType>, v
         val ans = StringBuilder()
         ans.append("[")
         for (i in types.indices) {
-            if (types[i] == StorageType.Int) {
+            if (types[i] == java.lang.Integer::class.java) {
                 ans.append(key[i] as Int?)
                 ans.append(' ')
-            } else if (types[i] == StorageType.Long) {
+            } else if (types[i] == java.lang.Long::class.java) {
                 ans.append(key[i] as Long?)
                 ans.append(' ')
-            } else if (types[i] == StorageType.Float) {
+            } else if (types[i] == java.lang.Float::class.java) {
                 ans.append(key[i] as Float?)
                 ans.append(' ')
-            } else if (types[i] == StorageType.Double) {
+            } else if (types[i] == java.lang.Double::class.java) {
                 ans.append(key[i] as Double?)
                 ans.append(' ')
-            } else if (types[i] == StorageType.String) {
+            } else if (types[i] == java.lang.String::class.java) {
                 ans.append(key[i] as String)
                 ans.append("")
             }

@@ -7,7 +7,6 @@ import com.lss233.minidb.engine.index.bptree.MainDataConfiguration
 import com.lss233.minidb.engine.index.bptree.MainDataFile
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
-
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -42,7 +41,7 @@ class RelationTable {
     @Throws(IOException::class, MiniDBException::class)
     fun create() {
         meta!!.nextRowID = 0L
-        // TODO meta.validate()
+        meta!!.validate()
         meta!!.write(Paths.get(directory!!, "meta").toString())
         createOrResumeData(true)
     }
@@ -104,7 +103,7 @@ class RelationTable {
                 BPlusConfiguration(
                     1024,
                     8,
-                    ArrayList(listOf(StorageType.Long)),
+                    ArrayList(listOf(java.lang.Long::class.java)),
                     ArrayList(listOf(8)),
                     ArrayList(listOf(0)),
                     true,
@@ -125,7 +124,7 @@ class RelationTable {
                 BPlusConfiguration(
                     1024,
                     8,
-                    ArrayList(listOf(StorageType.Long)),
+                    ArrayList(listOf(java.lang.Long::class.java)),
                     ArrayList(listOf(8)),
                     ArrayList(listOf(0)),
                     false,
@@ -201,25 +200,26 @@ class RelationTable {
                 throw MiniDBException(String.format("column (%s) cannot be null!", meta!!.colnames!![i]))
             }
             if (row[i] != null) {
-                // TODO check type
-//                if (meta!!.coltypes!![i].toString() != row[i]!!.javaClass.typeName) {
-//                    throw MiniDBException(
-//                        String.format(
-//                            "Non-compatible type. Given: %s, Required: %s!",
-//                            row[i]!!.javaClass.typeName,
-//                            meta!!.coltypes!![i].toString()
-//                        )
-//                    )
-//                }
+                // check type
+                if (meta!!.coltypes!![i] != row[i]!!.javaClass) {
+                    throw MiniDBException(
+                        String.format(
+                            "Non-compatible type. Given: %s, Required: %s!",
+                            row[i]!!.javaClass.typeName,
+                            meta!!.coltypes!![i].typeName
+                        )
+                    )
+                }
+
                 // check string length
-                if (meta!!.coltypes!![i] === StorageType.String) {
+                if (meta!!.coltypes!![i] == java.lang.String::class.java) {
                     val length = (row[i] as String?)!!.toByteArray(StandardCharsets.UTF_8).size
                     if (length > meta!!.colsizes!![i]) {
                         throw MiniDBException(
-                            String.format(
+                            java.lang.String.format(
                                 "column (%s) length exceeds! The value is (%s) with a length of %d (in bytes), but the limit is %d.",
                                 meta!!.colnames!![i],
-                                row[i] as String?, length, meta!!.colsizes!![i]
+                                row[i], length, meta!!.colsizes!![i]
                             )
                         )
                     }
@@ -227,15 +227,15 @@ class RelationTable {
             } else {
                 // null columns, set the default value of the corresponding type.
                 indeedNullCols.add(i)
-                if (meta!!.coltypes!![i] === StorageType.String) {
+                if (meta!!.coltypes!![i] == java.lang.String::class.java) {
                     row[i] = ""
-                } else if (meta!!.coltypes!![i] === StorageType.Int) {
+                } else if (meta!!.coltypes!![i] == java.lang.Integer::class.java) {
                     row[i] = 0
-                } else if (meta!!.coltypes!![i] === StorageType.Long) {
+                } else if (meta!!.coltypes!![i] == java.lang.Long::class.java) {
                     row[i] = 0L
-                } else if (meta!!.coltypes!![i] === StorageType.Double) {
+                } else if (meta!!.coltypes!![i] == java.lang.Double::class.java) {
                     row[i] = 0.0
-                } else if (meta!!.coltypes!![i] === StorageType.Float) {
+                } else if (meta!!.coltypes!![i] == java.lang.Float::class.java) {
                     row[i] = 0f
                 }
             }

@@ -5,7 +5,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.*
 
 fun main() {
     val testRelation = TestRelation()
@@ -18,8 +17,7 @@ class TestRelation {
         val meta = RelationMeta()
         meta.ncols = 3
         meta.colnames = ArrayList(mutableListOf("a", "b", "c"))
-        meta.coltypes = ArrayList(listOf(StorageType.Int, StorageType.Double, StorageType.String))
-
+        meta.coltypes = ArrayList(listOf(java.lang.Integer::class.java, java.lang.Double::class.java, java.lang.String::class.java))
 
         meta.colsizes = ArrayList(mutableListOf(4, 8, 5))
         meta.nullableColIds = ArrayList(mutableListOf(2))
@@ -56,9 +54,5 @@ class TestRelation {
         println(bbuffer.long)
         // ;
         println(bbuffer.position())
-    }
-
-    fun test2() {
-        println("1  ")
     }
 }

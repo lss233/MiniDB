@@ -1,7 +1,6 @@
 package com.lss233.minidb.engine.index.bptree
 
-import com.lss233.minidb.engine.storage.StorageType
-
+import java.lang.reflect.Type
 
 /**
  * Class that stores all the configuration parameters for our B+ Tree.
@@ -14,7 +13,7 @@ import com.lss233.minidb.engine.storage.StorageType
 class BPlusConfiguration(
     pageSize: Int,
     var valueSize: Int = 0,
-    types: ArrayList<StorageType>,
+    types: ArrayList<Type>,
     sizes: ArrayList<Int>,
     colIDs: ArrayList<Int>,
     var unique: Boolean = false,
@@ -107,5 +106,4 @@ class BPlusConfiguration(
     fun getPageCountOffset(): Long {
         return 12
     }
-
 }
