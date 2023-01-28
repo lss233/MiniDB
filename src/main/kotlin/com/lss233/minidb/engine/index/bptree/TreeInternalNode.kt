@@ -65,11 +65,11 @@ class TreeInternalNode(nodeType: TreeNodeType, pageIndex: Long):TreeNode(nodeTyp
         // update root index in the file
         if (isRoot()) {
             r.seek(conf.headerSize - 16L)
-            r.writeLong(getPageIndex())
+            r.writeLong(pageIndex)
         }
 
         // account for the header page as well.
-        r.seek(getPageIndex())
+        r.seek(pageIndex)
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
         bbuffer.order(ByteOrder.BIG_ENDIAN)

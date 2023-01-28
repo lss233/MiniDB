@@ -4,7 +4,6 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.lang.reflect.Type
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -19,7 +18,7 @@ class RelationMeta : Serializable{
 
     var colnames: ArrayList<String>? = null // column names
 
-    var coltypes: ArrayList<Type>? = null // column types
+    var coltypes: ArrayList<StorageType>? = null // column types
 
     var colsizes: ArrayList<Int>? = null // column sizes. (esp. for variable length string)
 

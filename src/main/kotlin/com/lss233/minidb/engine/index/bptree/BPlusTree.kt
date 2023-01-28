@@ -7,6 +7,7 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
+import kotlin.math.ceil
 
 /**
  * On-disk BPlus Tree implementation.
@@ -72,7 +73,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             while (pindex != -1L) {
                 freeSlots.add(pindex)
                 fpn = readNode(pindex) as TreeFreePoolNode
-                for (each: ArrayList<Any> in fpn.keyArray!!) {
+                for (each: ArrayList<Any?> in fpn.keyArray!!) {
                     freeSlots.addLast(each[0] as Long)
                 }
                 pindex = fpn.nextPointer
@@ -103,7 +104,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      */
     @Suppress("unused")
     @Throws(IOException::class, MiniDBException::class, IllegalStateException::class)
-    fun insertPair(key: ArrayList<Any>, value: Long) {
+    fun insertPair(key: ArrayList<Any?>, value: Long) {
         if (root == null) {
             throw IllegalStateException("Can't insert to null tree")
         }
@@ -118,7 +119,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 TreeNode.TreeNodeType.TREE_ROOT_INTERNAL,
                 generateFirstAvailablePageIndex(conf)
             )
-            nodeBuf.addPointerAt(0, aChild!!.getPageIndex())
+            nodeBuf.addPointerAt(0, aChild!!.pageIndex)
             this.root = nodeBuf
 
             // split root.
@@ -143,7 +144,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @throws IOException is thrown when an I/O operation fails
      */
     @Throws(IOException::class, MiniDBException::class)
-    private fun insertNonFull(n: TreeNode, key: ArrayList<Any>, value: Long) {
+    private fun insertNonFull(n: TreeNode, key: ArrayList<Any?>, value: Long) {
         var useChild = true
         val i = binSearchBlock(n, key, Rank.PlusOne)
         // check if we have a leaf
@@ -279,7 +280,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
     private fun splitTreeNode(n: TreeInternalNode, index: Int) {
         val setIndex: Int
         val znode: TreeNode
-        val keyToAdd: ArrayList<Any>
+        val keyToAdd: ArrayList<Any?>
         val ynode = aChild // x.c_{i}
         if (ynode!!.isInternalNode()) {
             val yInternal = ynode as TreeInternalNode
@@ -303,11 +304,11 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
 
             // it is the root, invalidate it and make it a regular internal node
             if (yInternal.isRoot()) {
-                yInternal.setNodeType(TreeNode.TreeNodeType.TREE_INTERNAL_NODE)
+                yInternal.nodeType = TreeNode.TreeNodeType.TREE_INTERNAL_NODE
             }
 
             // update pointer at n_{index+1}
-            n.addPointerAt(index, zInternal.getPageIndex())
+            n.addPointerAt(index, zInternal.pageIndex)
             // update key value at n[index]
             n.addToKeyArrayAt(index, keyToAdd)
             // adjust capacity
@@ -321,20 +322,20 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             val yLeaf = ynode as TreeLeaf
             val afterLeaf: TreeLeaf
             zLeaf = TreeLeaf(
-                yLeaf.getNextPagePointer(),
-                yLeaf.getPageIndex(), TreeNode.TreeNodeType.TREE_LEAF,
+                yLeaf.nextPagePointer,
+                yLeaf.pageIndex, TreeNode.TreeNodeType.TREE_LEAF,
                 generateFirstAvailablePageIndex(conf)
             )
 
             // update the previous pointer from the node after ynode
             if (yLeaf.nextPagePointer != (-1).toLong()) {
-                afterLeaf = (readNode(yLeaf.getNextPagePointer()) as TreeLeaf)
-                afterLeaf.prevPagePointer = zLeaf.getPageIndex()
+                afterLeaf = (readNode(yLeaf.nextPagePointer) as TreeLeaf)
+                afterLeaf.prevPagePointer = zLeaf.pageIndex
                 afterLeaf.writeNode(treeFile, conf)
             }
 
             // update pointers in ynode, only have to update next pointer
-            yLeaf.setNextPagePointer(zLeaf.getPageIndex())
+            yLeaf.nextPagePointer = zLeaf.pageIndex
             val oldCapacity = yLeaf.getCurrentCapacity()
             setIndex = oldCapacity / 2
             for (i in 0 until setIndex) {
@@ -349,11 +350,11 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
 
             // it is the root, invalidate it and make it a regular leaf
             if (yLeaf.isRoot()) {
-                yLeaf.setNodeType(TreeNode.TreeNodeType.TREE_LEAF)
+                yLeaf.nodeType = TreeNode.TreeNodeType.TREE_LEAF
             }
 
             // update pointer at n_{index+1}
-            n.addPointerAt(index + 1, zLeaf.getPageIndex())
+            n.addPointerAt(index + 1, zLeaf.pageIndex)
             // update key value at n[index]
             n.addToKeyArrayAt(index, zLeaf.getKeyAt(0))
             // adjust capacity
@@ -380,14 +381,14 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         if (n.isOverflow()) {
             val ovf = n as TreeOverflow
             novf = TreeOverflow(
-                -1L, ovf.getPageIndex(),
+                -1L, ovf.pageIndex,
                 generateFirstAvailablePageIndex(conf)
             )
             // push the first value
             novf.pushToValueList(value)
             novf.incrementCapacity(conf)
             // update overflow pointer to parent node
-            ovf.setNextPagePointer(novf.getPageIndex())
+            ovf.setNextPagePointer(novf.pageIndex)
             // set being deleted to false
             novf.setBeingDeleted(false)
             novf.addToKeyArrayAt(0, ovf.getKeyAt(0)) // record the corresponding key
@@ -398,7 +399,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         } else if (n.isLeaf()) {
             val l = n as TreeLeaf
             novf = TreeOverflow(
-                -1L, l.getPageIndex(),
+                -1L, l.pageIndex,
                 generateFirstAvailablePageIndex(conf)
             )
             novf.addToKeyArrayAt(0, n.getKeyAt(index)) // record the corresponding key
@@ -406,7 +407,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             novf.pushToValueList(value)
             novf.incrementCapacity(conf)
             // update overflow pointer to parent node
-            l.setOverflowPointerAt(index, novf.getPageIndex())
+            l.setOverflowPointerAt(index, novf.pageIndex)
             // set being deleted to false
             novf.setBeingDeleted(false)
             // commit changes to overflow page
@@ -428,7 +429,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @param rank rank of the search (for lower/upper bound)
      * @return the index of the bound or found key.
      */
-    private fun binSearchBlock(n: TreeNode, key: ArrayList<Any>, rank: Rank): Int {
+    private fun binSearchBlock(n: TreeNode, key: ArrayList<Any?>, rank: Rank): Int {
         val ans = binarySearch(n, 0, n.getCurrentCapacity(), key)
         return when (rank) {
             Rank.PlusOne -> ans + 1
@@ -452,7 +453,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * if key is very small, -1 is returned.
      * if key is very large, n - 1 is returned.
      */
-    private fun binarySearch(node: TreeNode, lo: Int, hi: Int, key: ArrayList<Any>): Int {
+    private fun binarySearch(node: TreeNode, lo: Int, hi: Int, key: ArrayList<Any?>): Int {
         var lo = lo
         var hi = hi
         while (lo < hi) {
@@ -501,7 +502,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @throws IOException is thrown when an I/O operation fails
      */
     @Throws(IOException::class, MiniDBException::class)
-    fun rangeSearch(minKey: ArrayList<Any>, maxKey: ArrayList<Any>, includeMin: Boolean, includeMax: Boolean): LinkedList<Long> {
+    fun rangeSearch(minKey: ArrayList<Any?>, maxKey: ArrayList<Any?>, includeMin: Boolean, includeMax: Boolean): LinkedList<Long> {
         val ans = LinkedList<Long>()
         conf.padKey(minKey)
         conf.padKey(maxKey)
@@ -534,11 +535,11 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             i++
             if (i == leaf.getCurrentCapacity()) {
                 // check if we need to read the next block
-                if (leaf.getNextPagePointer() < 0) {
+                if (leaf.nextPagePointer < 0) {
                     // check if we have a next node to load.
                     return ans
                 }
-                leaf = readNode(leaf.getNextPagePointer()) as TreeLeaf?
+                leaf = readNode(leaf.nextPagePointer) as TreeLeaf?
                 i = 0
             }
         }
@@ -551,11 +552,11 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             ++i
             if (i == leaf.getCurrentCapacity()) {
                 // check if we need to read the next block
-                if (leaf.getNextPagePointer() < 0) {
+                if (leaf.nextPagePointer < 0) {
                     // check if we have a next node to load.
                     return ans
                 }
-                leaf = readNode(leaf.getNextPagePointer()) as TreeLeaf?
+                leaf = readNode(leaf.nextPagePointer) as TreeLeaf?
                 i = 0
             }
         }
@@ -566,11 +567,11 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             i++
             if (i == leaf.getCurrentCapacity()) {
                 // check if we need to read the next block
-                if (leaf.getNextPagePointer() < 0) {
+                if (leaf.nextPagePointer < 0) {
                     // check if we have a next node to load.
                     return ans
                 }
-                leaf = readNode(leaf.getNextPagePointer()) as TreeLeaf?
+                leaf = readNode(leaf.nextPagePointer) as TreeLeaf?
                 i = 0
             }
         }
@@ -588,12 +589,12 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * else, return Pair(leaf node that contains the given key, the index of the key)
      */
     @Throws(IOException::class, MiniDBException::class)
-    private fun findKey(key: ArrayList<Any>): SearchResult {
+    private fun findKey(key: ArrayList<Any?>): SearchResult {
         return _findKey(root!!, null, -1, -1, key)
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    private fun _findKey(currentArg: TreeNode, parent: TreeInternalNode?, parentPointerIndex: Int, parentKeyIndex: Int, key: ArrayList<Any>): SearchResult {
+    private fun _findKey(currentArg: TreeNode, parent: TreeInternalNode?, parentPointerIndex: Int, parentKeyIndex: Int, key: ArrayList<Any?>): SearchResult {
         // check if we need to consolidate
         var current = currentArg
         if (current.isTimeToMerge(conf)) {
@@ -645,7 +646,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @return whether the deletion or update is successful
      */
     @Throws(IOException::class, MiniDBException::class)
-    private fun deleteOrUpdatePair(key: ArrayList<Any>, value: Long, newValue: Long, delete: Boolean): Boolean {
+    private fun deleteOrUpdatePair(key: ArrayList<Any?>, value: Long, newValue: Long, delete: Boolean): Boolean {
         conf.padKey(key)
         val ans = findKey(key)
         if (!ans.found) {
@@ -713,7 +714,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                             ovf.setNextPagePointer(-1L)
                             ovf.writeNode(treeFile, conf)
                         }
-                        deletePage(povf.getPageIndex(), false)
+                        deletePage(povf.pageIndex, false)
                     } else {
                         // delete a value but the page is not empty, or update a value. just update the page.
                         if (!delete && value == newValue) {
@@ -740,12 +741,12 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    fun deletePair(key: ArrayList<Any>, value: Long): Boolean {
+    fun deletePair(key: ArrayList<Any?>, value: Long): Boolean {
         return deleteOrUpdatePair(key, value, -1L, true)
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    fun updatePair(key: ArrayList<Any>, value: Long, newValue: Long): Boolean {
+    fun updatePair(key: ArrayList<Any?>, value: Long, newValue: Long): Boolean {
         return deleteOrUpdatePair(key, value, newValue, false)
     }
 
@@ -754,7 +755,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @return not null. LinkedList with length >= 0.
      */
     @Throws(IOException::class, MiniDBException::class)
-    fun search(key: ArrayList<Any>): LinkedList<Long> {
+    fun search(key: ArrayList<Any?>): LinkedList<Long> {
         val returnValue = LinkedList<Long>()
         conf.padKey(key)
         val ans = findKey(key)
@@ -776,7 +777,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @return true if it is, false if it's not
      */
     private fun isParent(node: TreeNode, parent: TreeInternalNode, pindex: Int): Boolean {
-        return parent.getCurrentCapacity() >= pindex && pindex >= 0 && node.getPageIndex() == parent.getPointerAt(pindex)
+        return parent.getCurrentCapacity() >= pindex && pindex >= 0 && node.pageIndex == parent.getPointerAt(pindex)
     }
 
     /**
@@ -875,7 +876,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         left: Boolean, parent: TreeInternalNode?,
         parentKeyIndex: Int
     ) {
-        val key: ArrayList<Any>
+        val key: ArrayList<Any?>
         // handle the case when redistributing using prev
         if (left) {
             to!!.pushToOverflowList(with!!.removeLastOverflowPointer())
@@ -949,7 +950,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         left: Boolean, parent: TreeInternalNode?,
         parentKeyIndex: Int
     ) {
-        val key: ArrayList<Any>
+        val key: ArrayList<Any?>
         val pkey = parent!!.getKeyAt(parentKeyIndex)
         if (left) {
             to!!.pushToKeyArray(pkey)
@@ -1029,7 +1030,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         joinLeaves(left, right, cap)
 
         // update the next pointers
-        left.setNextPagePointer(right.getNextPagePointer())
+        left.nextPagePointer = right.nextPagePointer
         // now fix the top pointer
         fixTheTopPointer(
             other, parent, parentPointerIndex,
@@ -1043,9 +1044,9 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
 
         // update the prev pointer of right next node (if any)
         if (right.nextPagePointer != (-1).toLong()) {
-            val rnext = readNode(right.getNextPagePointer()) as TreeLeaf?
+            val rnext = readNode(right.nextPagePointer) as TreeLeaf?
             if (rnext != null) {
-                rnext.prevPagePointer = left.getPageIndex()
+                rnext.prevPagePointer = left.pageIndex
             }
             rnext!!.writeNode(treeFile, conf)
         }
@@ -1053,7 +1054,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         // write the left node to disk
         left.writeNode(treeFile, conf)
         // remove the page
-        deletePage(right.getPageIndex(), false)
+        deletePage(right.pageIndex, false)
         // finally return the node reference
         return left
     }
@@ -1114,7 +1115,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         joinLeaves(left, right, cap)
 
         // remove the page
-        deletePage(right.getPageIndex(), false)
+        deletePage(right.pageIndex, false)
     }
 
     /**
@@ -1188,7 +1189,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         // write the node
         left.writeNode(treeFile, conf)
         // remove the page
-        deletePage(right.getPageIndex(), false)
+        deletePage(right.pageIndex, false)
         // finally remove the node reference
         return left
     }
@@ -1201,7 +1202,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @throws IOException is thrown when an I/O operation fails
      */
     @Throws(IOException::class, MiniDBException::class)
-    private fun mergeNodes(left: TreeInternalNode, right: TreeInternalNode, midKey: ArrayList<Any>) {
+    private fun mergeNodes(left: TreeInternalNode, right: TreeInternalNode, midKey: ArrayList<Any?>) {
         right.setBeingDeleted(true)
         left.addLastToKeyArray(midKey)
         val cap = right.getCurrentCapacity()
@@ -1212,7 +1213,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         left.incrementCapacity(conf)
 
         // finally remove the page
-        deletePage(right.getPageIndex(), false)
+        deletePage(right.pageIndex, false)
     }
 
     /**
@@ -1291,14 +1292,14 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      * @throws MiniDBException is thrown when there are inconsistencies in the blocks.
      */
     @Throws(IOException::class, MiniDBException::class)
-    private fun handleRootRedistributionOrMerging(mnode: TreeNode): TreeNode? {
-        if (mnode.isInternalNode()) {
+    private fun handleRootRedistributionOrMerging(node: TreeNode): TreeNode? {
+        if (node.isInternalNode()) {
             //System.out.println("\n -- Check if Consolidating Root required");
-            if (mnode.getCurrentCapacity() > 1) {
+            if (node.getCurrentCapacity() > 1) {
                 //System.out.println("\n -- Root size > 2, no consolidation");
                 return root
             }
-            val splitNode = mnode as TreeInternalNode
+            val splitNode = node as TreeInternalNode
             // read up their pointers
 
             // load the pointers
@@ -1317,9 +1318,9 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 // check if it's time to merge
                 if (lcap > conf.getMinLeafNodeCapacity() && rcap > conf.getMinLeafNodeCapacity()) {
                     //System.out.println(" -- No need to consolidate root yet (to -> leaf)");
-                    return mnode
+                    return node
                 }
-                val rNode = mnode
+                val rNode = node
                 val pLeaf = lChild as TreeLeaf
                 val nLeaf = rChild as TreeLeaf
 
@@ -1334,12 +1335,12 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 } else {
                     mergeNodes(pLeaf, nLeaf)
                     // update root page
-                    pLeaf.setNodeType(TreeNode.TreeNodeType.TREE_ROOT_LEAF)
+                    pLeaf.nodeType = TreeNode.TreeNodeType.TREE_ROOT_LEAF
                     // update the leaf pointers
                     pLeaf.nextPagePointer = -1L
                     pLeaf.prevPagePointer = -1L
                     // delete previous root page
-                    deletePage(root!!.getPageIndex(), false)
+                    deletePage(root!!.pageIndex, false)
                     // set root page
                     root = lChild
                     // write root header
@@ -1353,14 +1354,14 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 // check if it's time to merge
                 if (lcap + rcap >= conf.getMaxInternalNodeCapacity()) {
                     //System.out.println(" -- No need to consolidate root yet (to -> internal)");
-                    return mnode
+                    return node
                 }
                 /*
                 else {
                     System.out.println("-- Consolidating Root (internal -> internal)");
                 }
                 */
-                val rNode = mnode
+                val rNode = node
                 val lIntNode = lChild as TreeInternalNode
                 val rIntNode = rChild as TreeInternalNode
                 val nnum = canRedistribute(rIntNode)
@@ -1374,9 +1375,9 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                     //System.out.println("\t -- Merging leaf nodes");
                     mergeNodes(lIntNode, rIntNode, splitNode.getFirstKey())
                     // update root page
-                    lIntNode.setNodeType(TreeNode.TreeNodeType.TREE_ROOT_INTERNAL)
+                    lIntNode.nodeType = TreeNode.TreeNodeType.TREE_ROOT_INTERNAL
                     // delete previous root page
-                    deletePage(root!!.getPageIndex(), false)
+                    deletePage(root!!.pageIndex, false)
                     // set root page
                     root = lChild
                     // write root header
@@ -1391,7 +1392,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 throw MiniDBException(MiniDBException.InvalidBPTreeState)
             }
             return root
-        } else if (!mnode.isLeaf()) {
+        } else if (!node.isLeaf()) {
             // "Invalid tree Root type."
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
         }
@@ -1401,7 +1402,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
     /**
      * Handle the leaf section of the redistribution/merging
      *
-     * @param mnode node to process
+     * @param node node to process
      * @param parent the parent node
      * @param parentPointerIndex parent pointer index
      * @param parentKeyIndex parent key index that mnode is child
@@ -1500,17 +1501,17 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
      */
     @Throws(MiniDBException::class)
     private fun validateNeighbours(prev: TreeLeaf, split: TreeLeaf, next: TreeLeaf) {
-        if (split.prevPagePointer != prev.getPageIndex()) {
+        if (split.prevPagePointer != prev.pageIndex) {
             // "Split prev pointer not matching prev page index"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
-        } else if (prev.nextPagePointer != split.getPageIndex()) {
+        } else if (prev.nextPagePointer != split.pageIndex) {
             // "Split page index not matching prev pointer"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
         }
-        if (split.nextPagePointer != next.getPageIndex()) {
+        if (split.nextPagePointer != next.pageIndex) {
             // "Split next pointer not matching next page index"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
-        } else if (next.prevPagePointer != split.getPageIndex()) {
+        } else if (next.prevPagePointer != split.pageIndex) {
             // "Split page index not matching next pointer"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
         }
@@ -1519,7 +1520,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
     /**
      * Handle the internal node redistribution/merging
      *
-     * @param mnode node to process
+     * @param node node to process
      * @param parent the parent node
      * @param parentPointerIndex parent pointer index
      * @param parentKeyIndex parent key index that mnode is child
@@ -1537,12 +1538,10 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         //System.out.println("Internal node merging/redistribution needs to happen");
         var mnode: TreeNode? = node
         val splitNode = mnode as TreeInternalNode?
-        val nptr: TreeInternalNode?
-        val pptr: TreeInternalNode?
 
         // load the adjacent nodes
-        nptr = readNode(parent.getPointerAt(parentPointerIndex + 1)) as TreeInternalNode?
-        pptr = readNode(parent.getPointerAt(parentPointerIndex - 1)) as TreeInternalNode?
+        val nptr: TreeInternalNode? = readNode(parent.getPointerAt(parentPointerIndex + 1)) as TreeInternalNode?
+        val pptr: TreeInternalNode? = readNode(parent.getPointerAt(parentPointerIndex - 1)) as TreeInternalNode?
         if (nptr == null && pptr == null) {
             // "Can't have both children null"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
@@ -1671,7 +1670,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         var fpn: TreeFreePoolNode
         val cap = conf.freePoolNodeDegree
         // calculate the number of pages needed
-        val pages = Math.ceil(rest / (cap.toDouble())).toInt()
+        val pages = ceil(rest / (cap.toDouble())).toInt()
         for (i in 0 until pages) {
             freePoolNodes.add(freeSlots.removeFirst())
         }
@@ -1691,7 +1690,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
             // write it.
             var j = 0
             while (j < cap && poolIndex < freeSlots.size) {
-                fpn.addToKeyArrayAt(j, ArrayList<Any>(Arrays.asList(freeSlots[poolIndex])))
+                fpn.addToKeyArrayAt(j, ArrayList<Any?>(listOf(freeSlots[poolIndex])))
                 fpn.incrementCapacity(conf)
                 j++
                 poolIndex++
@@ -1801,7 +1800,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
 
             // now loop through the
             for (i in 0 until curCap) {
-                lpOvf.addToKeyArrayAt(i, ArrayList<Any>(Arrays.asList(bbuffer.long)))
+                lpOvf.addToKeyArrayAt(i, ArrayList<Any?>(listOf(bbuffer.long)))
             }
 
             // update capacity
@@ -1868,7 +1867,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
 
         // read the entry size
         val entrySize = r.readInt()
-        if (entrySize <= 0 || entrySize != conf.valueSize) {
+        if (entrySize <= 0 || entrySize != conf.valueSize.toInt()) {
             throw MiniDBException(MiniDBException.InvalidBPTreeState)
         }
 
@@ -1905,7 +1904,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
         treeFile.writeInt(conf.keySize)
         treeFile.writeInt(conf.valueSize)
         treeFile.writeLong(usedPages)
-        treeFile.writeLong(root!!.getPageIndex())
+        treeFile.writeLong(root!!.pageIndex)
         treeFile.writeLong(firstFreePoolPointer)
     }
 

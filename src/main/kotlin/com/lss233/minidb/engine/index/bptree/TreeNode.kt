@@ -15,13 +15,27 @@ import java.util.*
  * @param pageIndex the page index in the file
  */
 @SuppressWarnings("unused")
-abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long = 0) {
+abstract class TreeNode constructor(nodeType: TreeNodeType, var pageIndex: Long) {
+
+    var nodeType: TreeNodeType = nodeType
+        set(value) {
+            // check if we presently are a leaf
+            if (isLeaf()) {
+                field = value
+                if (isInternalNode()) {
+                    throw IllegalArgumentException("Cannot convert Leaf to Internal Node")
+                }
+            } else {
+                field = value
+                throw IllegalArgumentException("Cannot convert Internal Node to Leaf")
+            }
+        }
 
     enum class TreeNodeType {
         TREE_LEAF, TREE_INTERNAL_NODE, TREE_ROOT_INTERNAL, TREE_ROOT_LEAF, TREE_LEAF_OVERFLOW, TREE_FREE_POOL
     }
 
-    var keyArray: LinkedList<ArrayList<Any>>? = null // key array
+    var keyArray: LinkedList<ArrayList<Any?>>? = null // key array
 
 
     private var currentCapacity = 0 // current capacity
@@ -45,10 +59,10 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      */
     open fun isFull(conf: BPlusConfiguration): Boolean {
         return if (isLeaf()) {
-            if (isOverflow()) conf.getMaxOverflowNodeCapacity() == currentCapacity else conf.getMaxLeafNodeCapacity() == currentCapacity
+            if (isOverflow()) conf.getMaxOverflowNodeCapacity() == currentCapacity.toLong() else conf.getMaxLeafNodeCapacity() == currentCapacity.toLong()
         } else {
             // internal
-            conf.getMaxInternalNodeCapacity() == currentCapacity
+            conf.getMaxInternalNodeCapacity() == currentCapacity.toLong()
         }
     }
 
@@ -142,7 +156,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
             }
             if (isOverflow()) {
                 if (beingDeleted && currentCapacity < 0) {
-                    // "Cannot have less than 0 elements in a overflow node when deleting it"
+                    // "Cannot have less than 0 elements in an overflow node when deleting it"
                     throw RuntimeException("InvalidBPTreeState")
                 } else if (currentCapacity > conf.getMaxOverflowNodeCapacity()) {
                     // "Exceeded overflow node allowed capacity (node)"
@@ -238,57 +252,16 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
         return nodeType == TreeNodeType.TREE_FREE_POOL
     }
 
-    /**
-     * Return the node type
-     *
-     * @return the current node type
-     */
-    open fun getNodeType(): TreeNodeType? {
-        return nodeType
-    }
-
-    /**
-     * Explicitly set the node type
-     *
-     * @param nodeType set the node type
-     */
-    open fun setNodeType(nodeType: TreeNodeType?) {
-        // check if we presently are a leaf
-        if (isLeaf()) {
-            this.nodeType = nodeType
-            require(!isInternalNode()) { "Cannot convert Leaf to Internal Node" }
-        } else {
-            this.nodeType = nodeType
-            require(!isLeaf()) { "Cannot convert Internal Node to Leaf" }
-        }
-    }
 
     /**
      * Get the specific key at position indicated by `index`
      * @param index the position to get the key
      * @return the key at position
      */
-    open fun getKeyAt(index: Int): ArrayList<Any> {
+    open fun getKeyAt(index: Int): ArrayList<Any?> {
         return keyArray!![index]
     }
 
-    /**
-     * Return the page index
-     *
-     * @return current page index
-     */
-    open fun getPageIndex(): Long {
-        return pageIndex
-    }
-
-    /**
-     * Update the page index
-     *
-     * @param pageIndex new page index
-     */
-    open fun setPageIndex(pageIndex: Long) {
-        this.pageIndex = pageIndex
-    }
 
     /**
      * Set the key in the array at specific position
@@ -296,7 +269,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      * @param index index to set the key
      * @param key key to set in position
      */
-    open fun setKeyArrayAt(index: Int, key: ArrayList<Any>) {
+    open fun setKeyArrayAt(index: Int, key: ArrayList<Any?>) {
         keyArray!![index] = key
     }
 
@@ -307,7 +280,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      * @param index index to shift keys and add
      * @param key key to add in position
      */
-    open fun addToKeyArrayAt(index: Int, key: ArrayList<Any>) {
+    open fun addToKeyArrayAt(index: Int, key: ArrayList<Any?>) {
         keyArray!!.add(index, key)
     }
 
@@ -316,7 +289,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @param key key to push
      */
-    open fun pushToKeyArray(key: ArrayList<Any>) {
+    open fun pushToKeyArray(key: ArrayList<Any?>) {
         keyArray!!.push(key)
     }
 
@@ -325,7 +298,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @param key key to add
      */
-    open fun addLastToKeyArray(key: ArrayList<Any>) {
+    open fun addLastToKeyArray(key: ArrayList<Any?>) {
         keyArray!!.addLast(key)
     }
 
@@ -334,7 +307,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @return return the last key
      */
-    open fun getLastKey(): ArrayList<Any> {
+    open fun getLastKey(): ArrayList<Any?> {
         return keyArray!!.last
     }
 
@@ -343,7 +316,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @return return the first key value
      */
-    open fun getFirstKey(): ArrayList<Any> {
+    open fun getFirstKey(): ArrayList<Any?> {
         return keyArray!!.first
     }
 
@@ -352,7 +325,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @return key that is in the head of the array
      */
-    open fun popKey(): ArrayList<Any> {
+    open fun popKey(): ArrayList<Any?> {
         return keyArray!!.pop()
     }
 
@@ -361,17 +334,17 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      *
      * @return key that is in the last place of the array
      */
-    open fun removeLastKey(): ArrayList<Any> {
+    open fun removeLastKey(): ArrayList<Any?> {
         return keyArray!!.removeLast()
     }
 
     /**
      * Remove and pop the key at specific position
      *
-     * @param index index that points where to remvoe the key
+     * @param index index that points where to remove the key
      * @return removed key
      */
-    open fun removeKeyAt(index: Int): ArrayList<Any> {
+    open fun removeKeyAt(index: Int): ArrayList<Any?> {
         return keyArray!!.removeAt(index)
     }
 
@@ -384,7 +357,7 @@ abstract class TreeNode(var nodeType: TreeNodeType? = null, var pageIndex: Long 
      */
     @Throws(InvalidPropertiesFormatException::class)
     open fun getPageType(): Short {
-        return when (getNodeType()) {
+        return when (nodeType) {
             TreeNodeType.TREE_LEAF -> {
                 1
             }

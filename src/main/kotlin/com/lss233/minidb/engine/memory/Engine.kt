@@ -1,7 +1,6 @@
 package com.lss233.minidb.engine.memory
 
 import com.lss233.minidb.engine.SQLParser
-import com.lss233.minidb.engine.storage.StorageService
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
@@ -14,8 +13,6 @@ object Engine {
     val systemSession: Session = Session()
     private val databases = HashMap<String, Database>()
     val session = ThreadLocal<Session>()
-
-    private val storageService = StorageService()
 
     init {
         systemSession.properties["database"] = "minidb"
@@ -83,48 +80,4 @@ object Engine {
         return db
     }
 
-    fun loadStorageData() {
-        val databaseList = storageService.getDatabaseList()
-        if (databaseList.isEmpty()) {
-            // TODO init storage service
-        }
-        // get the databaseList
-        for (database in databaseList) {
-
-            val tempDatabase = Database(database,10,1,'c',true,-1)
-            // base on the database name to get the schemas
-            val schemaList = storageService.getSchemaList(database)
-            for (schema in schemaList) {
-                val tempSchema = Schema(schemaName = schema)
-                // base on the schema name to get the tables
-                val tableList = storageService.getTableList(database, schema)
-                for (table in tableList) {
-                    tempSchema[table] = storageService.getTable(dbName = database, tableName = table, schemaName = schema)
-                }
-                tempDatabase[schema] = tempSchema
-            }
-            this.databases[database] = tempDatabase
-        }
-    }
-
-    // is temp
-    fun dataStorage() {
-        // When the system data table has been created
-        for (database in this.databases) {
-            // create database
-            for (schema in database.value.schemas) {
-                // TODO should be change
-                if (schema.key == "pg_catalog" || schema.key == "information_schema") {
-                    continue
-                }
-                // mark the schema to the table
-                for (table in schema.value.views.filter { (_, view) -> view is Table}) {
-                    // mark the table
-                    if(table.value is Table) {
-                        storageService.updateOrSaveTable(tableName = table.key, dbName = database.key, schemaName = schema.key, table = table.value as Table)
-                    }
-                }
-            }
-        }
-    }
 }

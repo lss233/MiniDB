@@ -88,15 +88,6 @@ class TreeLeaf constructor (
         return valueList.removeLast()
     }
 
-    fun getNextPagePointer(): Long {
-        return nextPagePointer
-    }
-
-    fun setNextPagePointer(next: Long) {
-        nextPagePointer = next
-    }
-
-
     fun removeEntryAt(index: Int, conf: BPlusConfiguration): Long {
         keyArray!!.removeAt(index)
         overflowList.removeAt(index)
@@ -116,11 +107,11 @@ class TreeLeaf constructor (
         // update root index in the file
         if (isRoot()) {
             r.seek(conf.headerSize - 16L)
-            r.writeLong(getPageIndex())
+            r.writeLong(pageIndex)
         }
 
         // account for the header page as well.
-        r.seek(getPageIndex())
+        r.seek(pageIndex)
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
         bbuffer.order(ByteOrder.BIG_ENDIAN)

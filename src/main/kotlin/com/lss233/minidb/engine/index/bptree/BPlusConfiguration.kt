@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.index.bptree
 
-import java.lang.reflect.Type
+import com.lss233.minidb.engine.storage.StorageType
+
 
 /**
  * Class that stores all the configuration parameters for our B+ Tree.
@@ -13,45 +14,45 @@ import java.lang.reflect.Type
 class BPlusConfiguration(
     pageSize: Int,
     var valueSize: Int = 0,
-    types: ArrayList<Type>,
+    types: ArrayList<StorageType>,
     sizes: ArrayList<Int>,
     colIDs: ArrayList<Int>,
     var unique: Boolean = false,
     var trimFileThreshold: Int = 0
 ): Configuration(pageSize, types, sizes,colIDs) {
 
+    var headerSize: Long = 0 // header size (in bytes)
 
-    var headerSize = 0 // header size (in bytes)
+    private var leafHeaderSize:Long = 0 // leaf node header size (in bytes)
 
-    var leafHeaderSize = 0 // leaf node header size (in bytes)
+    private var internalNodeHeaderSize:Long = 0 // internal node header size (in bytes)
 
-    var internalNodeHeaderSize = 0 // internal node header size (in bytes)
+    private var overflowNodeHeaderSize:Long = 0 // overflow node header size
 
-    var overflowNodeHeaderSize = 0 // overflow node header size
-
-    var freePoolNodeHeaderSize = 0 // free pool page header size
+    private var freePoolNodeHeaderSize:Long = 0 // free pool page header size
 
 
-    var leafNodeDegree = 0 // leaf node degree
+    private var leafNodeDegree:Long = 0 // leaf node degree
 
-    var treeDegree = 0 // tree degree (internal node degree)
+    private var treeDegree:Long = 0 // tree degree (internal node degree)
 
-    var overflowPageDegree = 0 // overflow page degree
+    private var overflowPageDegree:Long = 0 // overflow page degree
 
-    var freePoolNodeDegree = 0 // lookup overflow page degree
+    var freePoolNodeDegree:Long = 0 // lookup overflow page degree
 
 
     init {
 
-        headerSize = (Int.SIZE_BITS * 3 + 4 * Long.SIZE_BITS) / 8 // header size in bytes
+        headerSize = (((Int.SIZE_BITS * 3 + 4 * Long.SIZE_BITS) / 8).toLong()) // header size in bytes
 
-        leafHeaderSize = (Short.SIZE_BITS + 2 * Long.SIZE_BITS + Int.SIZE_BITS) / 8 // 22 bytes
+        leafHeaderSize = ((Short.SIZE_BITS + 2 * Long.SIZE_BITS + Int.SIZE_BITS) / 8).toLong() // 22 bytes
 
-        internalNodeHeaderSize = (Short.SIZE_BITS + Int.SIZE_BITS) / 8 // 6 bytes
+        internalNodeHeaderSize = ((Short.SIZE_BITS + Int.SIZE_BITS) / 8).toLong() // 6 bytes
 
-        overflowNodeHeaderSize = (Short.SIZE_BITS + 2 * Long.SIZE_BITS + Int.SIZE_BITS) / 8 + keySize // 22 + keySize bytes
+        overflowNodeHeaderSize =
+            ((Short.SIZE_BITS + 2 * Long.SIZE_BITS + Int.SIZE_BITS) / 8 + keySize).toLong() // 22 + keySize bytes
 
-        freePoolNodeHeaderSize = (Short.SIZE_BITS + Long.SIZE_BITS + Int.SIZE_BITS) / 8 // 14 bytes
+        freePoolNodeHeaderSize = ((Short.SIZE_BITS + Long.SIZE_BITS + Int.SIZE_BITS) / 8).toLong() // 14 bytes
 
         // now calculate the degree
 
@@ -67,7 +68,7 @@ class BPlusConfiguration(
         checkDegreeValidity()
     }
 
-    private fun calculateDegree(elementSize: Int, elementHeaderSize: Int): Int {
+    private fun calculateDegree(elementSize: Int, elementHeaderSize: Long): Long {
         return (pageSize - elementHeaderSize) / elementSize
     }
 
@@ -79,35 +80,31 @@ class BPlusConfiguration(
         require(!(treeDegree < 2 || leafNodeDegree < 2 || overflowPageDegree < 2 || freePoolNodeDegree < 2)) { "Can't have a degree < 2" }
     }
 
-    fun getMaxInternalNodeCapacity(): Int {
+    fun getMaxInternalNodeCapacity(): Long {
         return treeDegree
     }
 
-    fun getMinInternalNodeCapacity(): Int {
+    fun getMinInternalNodeCapacity(): Long {
         return (treeDegree - 1) / 2
     }
 
-    fun getMaxLeafNodeCapacity(): Int {
+    fun getMaxLeafNodeCapacity(): Long {
         return leafNodeDegree
     }
 
-    fun getMinLeafNodeCapacity(): Int {
+    fun getMinLeafNodeCapacity(): Long {
         return (leafNodeDegree - 1) / 2
     }
 
-    fun getMaxOverflowNodeCapacity(): Int {
+    fun getMaxOverflowNodeCapacity(): Long {
         return overflowPageDegree
     }
 
-    fun getFreePoolNodeDegree(): Int {
-        return freePoolNodeDegree
-    }
-
     fun getFreePoolNodeOffset(): Long {
-        return freePoolNodeHeaderSize.toLong()
+        return freePoolNodeHeaderSize
     }
 
-    fun getPageCountOffset(): Int {
+    fun getPageCountOffset(): Long {
         return 12
     }
 

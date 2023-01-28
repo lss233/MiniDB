@@ -1,8 +1,8 @@
 package com.lss233.minidb.engine.index.bptree
 
-import java.lang.reflect.Type
+import com.lss233.minidb.engine.storage.StorageType
 
-class MainDataConfiguration(types: ArrayList<Type>, sizes: ArrayList<Int>, colIDs: ArrayList<Int>):
+class MainDataConfiguration(types: ArrayList<StorageType>, sizes: ArrayList<Int>, colIDs: ArrayList<Int>):
     Configuration(0, types, sizes, colIDs) {
 
     var nValidPointerInFreePage: Int
@@ -15,7 +15,7 @@ class MainDataConfiguration(types: ArrayList<Type>, sizes: ArrayList<Int>, colID
         if (tmpSize % BASE != 0) {
             tmpSize += BASE - tmpSize % BASE
         }
-        pageSize = Math.max(32, tmpSize)
+        pageSize = 32.coerceAtLeast(tmpSize)
         nValidPointerInFreePage = pageSize / 8 - 1
     }
 }

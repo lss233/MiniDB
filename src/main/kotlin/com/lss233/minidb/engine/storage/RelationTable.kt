@@ -1,11 +1,13 @@
 package com.lss233.minidb.engine.storage
 
+
 import com.lss233.minidb.engine.index.bptree.BPlusConfiguration
 import com.lss233.minidb.engine.index.bptree.BPlusTree
 import com.lss233.minidb.engine.index.bptree.MainDataConfiguration
 import com.lss233.minidb.engine.index.bptree.MainDataFile
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
+
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -102,7 +104,7 @@ class RelationTable {
                 BPlusConfiguration(
                     1024,
                     8,
-                    ArrayList(listOf(Long::class.java)),
+                    ArrayList(listOf(StorageType.Long)),
                     ArrayList(listOf(8)),
                     ArrayList(listOf(0)),
                     true,
@@ -123,7 +125,7 @@ class RelationTable {
                 BPlusConfiguration(
                     1024,
                     8,
-                    ArrayList(listOf(Long::class.java)),
+                    ArrayList(listOf(StorageType.Long)),
                     ArrayList(listOf(8)),
                     ArrayList(listOf(0)),
                     false,
@@ -199,18 +201,18 @@ class RelationTable {
                 throw MiniDBException(String.format("column (%s) cannot be null!", meta!!.colnames!![i]))
             }
             if (row[i] != null) {
-                // check type
-                if (meta!!.coltypes!![i] !== row[i]!!.javaClass) {
-                    throw MiniDBException(
-                        String.format(
-                            "Non-compatible type. Given: %s, Required: %s!",
-                            row[i]!!.javaClass.typeName,
-                            meta!!.coltypes!![i].typeName
-                        )
-                    )
-                }
+                // TODO check type
+//                if (meta!!.coltypes!![i].toString() != row[i]!!.javaClass.typeName) {
+//                    throw MiniDBException(
+//                        String.format(
+//                            "Non-compatible type. Given: %s, Required: %s!",
+//                            row[i]!!.javaClass.typeName,
+//                            meta!!.coltypes!![i].toString()
+//                        )
+//                    )
+//                }
                 // check string length
-                if (meta!!.coltypes!![i] === String::class.java) {
+                if (meta!!.coltypes!![i] === StorageType.String) {
                     val length = (row[i] as String?)!!.toByteArray(StandardCharsets.UTF_8).size
                     if (length > meta!!.colsizes!![i]) {
                         throw MiniDBException(
@@ -225,15 +227,15 @@ class RelationTable {
             } else {
                 // null columns, set the default value of the corresponding type.
                 indeedNullCols.add(i)
-                if (meta!!.coltypes!![i] === String::class.java) {
+                if (meta!!.coltypes!![i] === StorageType.String) {
                     row[i] = ""
-                } else if (meta!!.coltypes!![i] === Int::class.java) {
+                } else if (meta!!.coltypes!![i] === StorageType.Int) {
                     row[i] = 0
-                } else if (meta!!.coltypes!![i] === Long::class.java) {
+                } else if (meta!!.coltypes!![i] === StorageType.Long) {
                     row[i] = 0L
-                } else if (meta!!.coltypes!![i] === Double::class.java) {
+                } else if (meta!!.coltypes!![i] === StorageType.Double) {
                     row[i] = 0.0
-                } else if (meta!!.coltypes!![i] === Float::class.java) {
+                } else if (meta!!.coltypes!![i] === StorageType.Float) {
                     row[i] = 0f
                 }
             }
@@ -241,7 +243,7 @@ class RelationTable {
 
         // check unique constrains
         for (tree in superKeyTrees!!) {
-            val thisRow: ArrayList<Any> = tree.conf.colIDs.stream().map { x -> row[x] }.collect(
+            val thisRow: ArrayList<Any?> = tree.conf.colIDs.stream().map { x -> row[x] }.collect(
                 Collectors.toCollection { ArrayList() }
             )
             if (tree.search(thisRow).size > 0) {
@@ -258,13 +260,13 @@ class RelationTable {
         // now it is time to insert!
         data!!.insertRow(row, rowID)
         for (tree in superKeyTrees!!) {
-            val thisRow: ArrayList<Any> = tree.conf.colIDs.stream().map { x -> row[x] }.collect(
+            val thisRow: ArrayList<Any?> = tree.conf.colIDs.stream().map { x -> row[x] }.collect(
                 Collectors.toCollection { ArrayList() }
             )
             tree.insertPair(thisRow, rowID)
         }
         for (tree in indexTrees!!) {
-            val thisRow: ArrayList<Any> = tree!!.conf.colIDs.stream().map { x -> row[x] }.collect(
+            val thisRow: ArrayList<Any?> = tree!!.conf.colIDs.stream().map { x -> row[x] }.collect(
                 Collectors.toCollection { ArrayList() }
             )
             tree.insertPair(thisRow, rowID)

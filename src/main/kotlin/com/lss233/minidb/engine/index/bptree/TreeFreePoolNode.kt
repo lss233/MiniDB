@@ -23,7 +23,7 @@ class TreeFreePoolNode(pageIndex: Long, var nextPointer: Long):TreeNode(TreeNode
     override fun writeNode(r: RandomAccessFile, conf: BPlusConfiguration) {
 
         // account for the header page as well
-        r.seek(getPageIndex())
+        r.seek(pageIndex)
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
         bbuffer.order(ByteOrder.BIG_ENDIAN)

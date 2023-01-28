@@ -79,25 +79,25 @@ class MainDataFile(
         bbuffer.order(ByteOrder.BIG_ENDIAN)
         bbuffer.putLong(rowID)
         conf.writeKey(bbuffer, key)
-        rowID2position.insertPair(ArrayList<Any>(Arrays.asList(rowID)), position)
+        rowID2position.insertPair(ArrayList<Any?>(listOf(rowID)), position)
         elementCount += 1
         file.write(buffer)
     }
 
     @Throws(IOException::class)
     fun deleteRow(rowID: Long) {
-        val position: Long = rowID2position.search(ArrayList<Any>(Arrays.asList(rowID))).get(0)
+        val position: Long = rowID2position.search(ArrayList<Any?>(listOf(rowID)))[0]
         if (freeSlots.contains(position)) {
             throw MiniDBException(String.format("The row %d to delete does not exist!", rowID))
         }
         freeSlots.add(position)
-        rowID2position.deletePair(ArrayList<Any>(Arrays.asList(rowID)), position)
+        rowID2position.deletePair(ArrayList<Any?>(listOf(rowID)), position)
         elementCount -= 1
     }
 
     @Throws(IOException::class, MiniDBException::class)
-    fun readRow(rowID: Long): ArrayList<Any> {
-        val position: Long = rowID2position.search(ArrayList<Any>(Arrays.asList(rowID))).get(0)
+    fun readRow(rowID: Long): ArrayList<Any?> {
+        val position: Long = rowID2position.search(ArrayList<Any?>(listOf(rowID)))[0]
         if (freeSlots.contains(position)) {
             throw MiniDBException(String.format("The row %d does not exist!", rowID))
         }
@@ -112,7 +112,7 @@ class MainDataFile(
 
     @Throws(IOException::class, MiniDBException::class)
     fun updateRow(rowID: Long, newKey: ArrayList<Any?>) {
-        val position: Long = rowID2position.search(ArrayList<Any>(listOf(rowID)))[0]
+        val position: Long = rowID2position.search(ArrayList<Any?>(listOf(rowID)))[0]
         val buffer = ByteArray(conf.pageSize)
         val bbuffer = ByteBuffer.wrap(buffer)
         bbuffer.order(ByteOrder.BIG_ENDIAN)
@@ -123,10 +123,10 @@ class MainDataFile(
     }
 
     class SearchResult {
-        var key: ArrayList<Any>?
+        var key: ArrayList<Any?>?
         var rowID: Long
 
-        constructor(key: ArrayList<Any>, rowID: Long) {
+        constructor(key: ArrayList<Any?>, rowID: Long) {
             this.key = key
             this.rowID = rowID
         }
@@ -193,7 +193,7 @@ class MainDataFile(
             freeSlots.addAll(tailFreePages)
         } else { // too many free pages at the last, trim the file
             for (i in 0..19) {
-                freeSlots.add(tailFreePages.pollFirst())
+                freeSlots.add(tailFreePages.pollFirst()!!)
             }
             file.setLength(file.length() - conf.pageSize * tailFreePages.size)
         }
@@ -201,7 +201,7 @@ class MainDataFile(
         freeSlots.toArray(positions)
         positions[positions.size - 1] = -1L
         var pages = positions.size / conf.nValidPointerInFreePage
-        if (freeSlots.size % conf.nValidPointerInFreePage !== 0) {
+        if (freeSlots.size % conf.nValidPointerInFreePage != 0) {
             pages += 1
         }
         val freePagePositions = arrayOfNulls<Long>(pages)
