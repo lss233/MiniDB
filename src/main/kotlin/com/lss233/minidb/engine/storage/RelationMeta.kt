@@ -10,9 +10,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
+ * Relational table metadata
  *
+ * which records some key information in the current relational table, similar to a table header.
+ *
+ * Examples include the number of columns, column types, size, number of records, and so on
  */
-class RelationMeta : Serializable{
+class RelationMeta : Serializable {
 
     var nextRowID: Long = 0 // the next available row ID
 
@@ -54,7 +58,7 @@ class RelationMeta : Serializable{
         for (each in coltypes!!) {
             if (each != java.lang.Integer::class.java && each != java.lang.Double::class.java
                     && each != java.lang.String::class.java && each != java.lang.Float::class.java
-                    && each != java.lang.Double::class.java) {
+                    && each != java.lang.Long::class.java) {
                 throw MiniDBException(java.lang.String.format(MiniDBException.UnknownColumnType, each))
             }
         }
@@ -97,7 +101,7 @@ class RelationMeta : Serializable{
         val nullableCols = HashSet(nullableColIds!!)
         // non-nullable constraint is implicit
         nullableCols.removeAll(nonNullableCols)
-        nullableColIds = java.util.ArrayList(nullableCols)
+        nullableColIds = ArrayList(nullableCols)
         return true
     }
 
@@ -115,5 +119,4 @@ class RelationMeta : Serializable{
         oos.writeObject(this)
         oos.close()
     }
-
 }

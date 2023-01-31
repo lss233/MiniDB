@@ -103,7 +103,6 @@ class TreeLeaf constructor (
      */
     @Throws(IOException::class)
     override fun writeNode(r: RandomAccessFile, conf: BPlusConfiguration) {
-
         // update root index in the file
         if (isRoot()) {
             r.seek(conf.headerSize - 16L)

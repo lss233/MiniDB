@@ -1309,18 +1309,17 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 // "Null root child found."
                 throw MiniDBException(MiniDBException.InvalidBPTreeState)
             }
-            val lcap = lChild.getCurrentCapacity()
-            val rcap = rChild.getCurrentCapacity()
+            val leftCap = lChild.getCurrentCapacity()
+            val rightCap = rChild.getCurrentCapacity()
 
             // check their type
             if (lChild.isLeaf()) {
 
                 // check if it's time to merge
-                if (lcap > conf.getMinLeafNodeCapacity() && rcap > conf.getMinLeafNodeCapacity()) {
+                if (leftCap > conf.getMinLeafNodeCapacity() && rightCap > conf.getMinLeafNodeCapacity()) {
                     //System.out.println(" -- No need to consolidate root yet (to -> leaf)");
                     return node
                 }
-                val rNode = node
                 val pLeaf = lChild as TreeLeaf
                 val nLeaf = rChild as TreeLeaf
 
@@ -1329,9 +1328,9 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 val nnum = canRedistribute(nLeaf)
                 val pnum = canRedistribute(pLeaf)
                 if (nnum > 0) {
-                    redistributeNodes(pLeaf, nLeaf, false, rNode, 0)
+                    redistributeNodes(pLeaf, nLeaf, false, node, 0)
                 } else if (pnum > 0) {
-                    redistributeNodes(nLeaf, pLeaf, true, rNode, 0)
+                    redistributeNodes(nLeaf, pLeaf, true, node, 0)
                 } else {
                     mergeNodes(pLeaf, nLeaf)
                     // update root page
@@ -1352,7 +1351,7 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                 }
             } else if (lChild.isInternalNode()) {
                 // check if it's time to merge
-                if (lcap + rcap >= conf.getMaxInternalNodeCapacity()) {
+                if (leftCap + rightCap >= conf.getMaxInternalNodeCapacity()) {
                     //System.out.println(" -- No need to consolidate root yet (to -> internal)");
                     return node
                 }
@@ -1361,16 +1360,15 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
                     System.out.println("-- Consolidating Root (internal -> internal)");
                 }
                 */
-                val rNode = node
                 val lIntNode = lChild as TreeInternalNode
                 val rIntNode = rChild as TreeInternalNode
                 val nnum = canRedistribute(rIntNode)
                 val pnum = canRedistribute(lIntNode)
                 if (nnum > 0) {
-                    redistributeNodes(lIntNode, rIntNode, false, rNode, 0)
+                    redistributeNodes(lIntNode, rIntNode, false, node, 0)
                 } else if (pnum > 0) {
                     //System.out.println("\t -- Redistributing right with elements from left");
-                    redistributeNodes(rIntNode, lIntNode, true, rNode, 0)
+                    redistributeNodes(rIntNode, lIntNode, true, node, 0)
                 } else {
                     //System.out.println("\t -- Merging leaf nodes");
                     mergeNodes(lIntNode, rIntNode, splitNode.getFirstKey())
@@ -1419,12 +1417,10 @@ class BPlusTree constructor(var conf: BPlusConfiguration, mode: String, treeFile
     ): TreeNode {
         var mnode = node
         val splitNode = mnode as TreeLeaf
-        val nptr: TreeLeaf?
-        val pptr: TreeLeaf?
 
         // load the pointers
-        nptr = readNode(splitNode.nextPagePointer) as TreeLeaf?
-        pptr = readNode(splitNode.prevPagePointer) as TreeLeaf?
+        val nptr: TreeLeaf? = readNode(splitNode.nextPagePointer) as TreeLeaf?
+        val pptr: TreeLeaf? = readNode(splitNode.prevPagePointer) as TreeLeaf?
         if (nptr == null && pptr == null) {
             // "Both children (leaves) can't null"
             throw MiniDBException(MiniDBException.InvalidBPTreeState)

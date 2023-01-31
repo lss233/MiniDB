@@ -3,7 +3,7 @@ package com.lss233.minidb.engine.config
 /**
  * 数据库存储的基本配置项
  */
-class DBConfig {
+class MiniDBConfig {
 
     companion object {
 
