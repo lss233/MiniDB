@@ -25,17 +25,19 @@ import java.util.stream.Collectors
  */
 class RelationTable {
 
+    var tableName: String? = null
+
     var meta: RelationMeta? = null
 
     var directory: String? = null // the directory to store the relation data
 
     var data: MainDataFile? = null // main tree for the data
 
-    var superKeyTrees: ArrayList<BPlusTree>? = null
+    private var superKeyTrees: ArrayList<BPlusTree>? = null
 
-    var indexTrees: ArrayList<BPlusTree?>? = null
+    private var indexTrees: ArrayList<BPlusTree?>? = null
 
-    var nullTrees: ArrayList<BPlusTree?>? = null
+    private var nullTrees: ArrayList<BPlusTree?>? = null
 
     // create the relation, save the metadata and create data trees
     @Throws(IOException::class, MiniDBException::class)

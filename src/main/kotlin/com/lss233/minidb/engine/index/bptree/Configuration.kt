@@ -135,6 +135,23 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         }
     }
 
+    fun writeKey(r: ByteBuffer, key: Array<Any>) {
+        padKey(key)
+        for (j in types.indices) {
+            if (types[j] == java.lang.Integer::class.java) {
+                r.putInt((key[j] as Int))
+            } else if (types[j] == java.lang.Long::class.java) {
+                r.putLong((key[j] as Long))
+            } else if (types[j] == java.lang.Float::class.java) {
+                r.putFloat((key[j] as Float))
+            } else if (types[j] == java.lang.Double::class.java) {
+                r.putDouble((key[j] as Double))
+            } else if (types[j] == java.lang.String::class.java) {
+                r.put((key[j] as String).toByteArray(StandardCharsets.UTF_8))
+            }
+        }
+    }
+
     @Throws(IOException::class)
     fun readKey(r: ByteBuffer): ArrayList<Any?> {
         val key = ArrayList(listOf(*arrayOf<Any?>(types.size)))
@@ -197,6 +214,13 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
     }
 
     fun padKey(key: ArrayList<Any?>): ArrayList<Any?> {
+        for (i in strColLocalId) {
+            key[i] = padString(key[i] as String, sizes[i])
+        }
+        return key
+    }
+
+    fun padKey(key: Array<Any>): Array<Any> {
         for (i in strColLocalId) {
             key[i] = padString(key[i] as String, sizes[i])
         }

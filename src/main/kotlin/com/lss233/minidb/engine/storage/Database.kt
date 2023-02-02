@@ -1,8 +1,11 @@
 package com.lss233.minidb.engine.storage
 
+import com.lss233.minidb.engine.storage.Schema
 import com.lss233.minidb.engine.config.MiniDBConfig
+import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
+import miniDB.parser.ast.expression.primary.Identifier
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -13,19 +16,17 @@ class Database {
     private val databaseName:String
 
     // the schemas in the database
-    private var schemas: HashMap<String ,Schema>
+    private var schemas = HashMap<String, Schema>()
 
     private var absFilePath: String
 
     constructor(name: String) {
         this.databaseName = name
-        schemas = HashMap()
         absFilePath = Paths.get(MiniDBConfig.DATA_FILE, databaseName).toString()
     }
 
     constructor() {
         this.databaseName = "defaultDatabase"
-        schemas = HashMap()
         absFilePath = Paths.get(MiniDBConfig.DATA_FILE, databaseName).toString()
     }
 

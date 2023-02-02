@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.memory
 
 import com.lss233.minidb.engine.NTuple
+import com.lss233.minidb.engine.config.MiniDBConfig
 import com.lss233.minidb.engine.memory.internal.catalog.*
 import com.lss233.minidb.engine.memory.internal.information.ColumnsView
 import com.lss233.minidb.engine.memory.internal.information.ParametersView
@@ -8,10 +9,13 @@ import com.lss233.minidb.engine.memory.internal.information.RoutinesView
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
+import java.nio.file.Paths
 import kotlin.concurrent.getOrSet
 
 class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int) {
     var schemas = HashMap<String, Schema>();
+
+    private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, name).toString()
 
     fun createTable(table: Table, identifier: Identifier): Database {
         val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
@@ -47,7 +51,11 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     operator fun get(schemaName: String): Schema {
         return schemas[schemaName] ?: throw RuntimeException("Schema $schemaName does not exists.");
     }
-    operator fun set(schemaName: String, schema: Schema) {
+
+    /**
+     * The privatization method avoids unnecessary set calls.
+     */
+    private operator fun set(schemaName: String, schema: Schema) {
         schemas[schemaName] = schema
     }
 

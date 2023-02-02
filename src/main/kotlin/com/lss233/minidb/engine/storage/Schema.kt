@@ -1,6 +1,7 @@
 package com.lss233.minidb.engine.storage
 
 import com.lss233.minidb.engine.config.MiniDBConfig
+import com.lss233.minidb.engine.storage.View
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
 import java.io.File
@@ -15,6 +16,7 @@ class Schema(schemaName: String, dbName: String) {
     private var relationTables: HashMap<String,RelationTable> = HashMap()
 
     private var absFilePath:String = Paths.get(MiniDBConfig.DATA_FILE, dbName, schemaName).toString()
+
 
     init {
         this.schemaName = schemaName

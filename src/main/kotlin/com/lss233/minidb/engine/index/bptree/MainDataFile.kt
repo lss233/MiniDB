@@ -84,6 +84,19 @@ class MainDataFile(
         file.write(buffer)
     }
 
+    fun insertRow(key: Array<Any>, rowID: Long) {
+        val position = firstAvailablePageIndex
+        file.seek(position)
+        val buffer = ByteArray(conf.pageSize)
+        val bbuffer = ByteBuffer.wrap(buffer)
+        bbuffer.order(ByteOrder.BIG_ENDIAN)
+        bbuffer.putLong(rowID)
+        conf.writeKey(bbuffer, key)
+        rowID2position.insertPair(ArrayList<Any?>(listOf(rowID)), position)
+        elementCount += 1
+        file.write(buffer)
+    }
+
     @Throws(IOException::class)
     fun deleteRow(rowID: Long) {
         val position: Long = rowID2position.search(ArrayList<Any?>(listOf(rowID)))[0]
