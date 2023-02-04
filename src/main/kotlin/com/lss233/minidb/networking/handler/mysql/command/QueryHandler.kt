@@ -133,7 +133,7 @@ class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<Reque
                         val relation = Relation(mutableListOf(
                             Column("Tables"),
                         ),
-                            Engine[session.database!!].schemas["public"]?.views?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
+                            Engine[session.database!!].schemas["public"]?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
                         )
                         println(relation)
                         ctx?.writeAndFlush(relation)?.sync()
@@ -142,7 +142,7 @@ class QueryHandler(val session: MySQLSession): SimpleChannelInboundHandler<Reque
                         val relation = Relation(mutableListOf(
                             Column("Tables"),
                         ),
-                            Engine[session.database!!].schemas["public"]?.views?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
+                            Engine[session.database!!].schemas["public"]?.map{ arrayOf<Any>(it.key)}?.toMutableList() ?: mutableListOf()
                         )
                         println(relation)
                         ctx?.writeAndFlush(relation)?.sync()

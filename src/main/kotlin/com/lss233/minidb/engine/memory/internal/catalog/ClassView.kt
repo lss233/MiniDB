@@ -22,7 +22,7 @@ class ClassView(database: Database) : PostgresCatalogView(database) {
     // arrayOf(1, table.name, identifier.parent.idText, 0, 0, 10, 0, "mem", "1", "r")
     override fun generateData(): MutableList<Array<Any>>
             = database.schemas.flatMap { (schemaName, schema) ->
-                schema.views.map { (name, view) ->
+                schema.map { (name, view) ->
                     arrayOf<Any>(
                         0, // oid
                         name, // relname

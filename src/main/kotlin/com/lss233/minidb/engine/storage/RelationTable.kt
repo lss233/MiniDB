@@ -1,6 +1,5 @@
 package com.lss233.minidb.engine.storage
 
-
 import com.lss233.minidb.engine.index.bptree.BPlusConfiguration
 import com.lss233.minidb.engine.index.bptree.BPlusTree
 import com.lss233.minidb.engine.index.bptree.MainDataConfiguration
@@ -341,7 +340,7 @@ class RelationTable {
                         }
                     }
                     return@Function result?.let { pred.apply(it) }
-                } catch (e: java.lang.Exception) {
+                } catch (e: Exception) {
                     throw Exception("Error!")
                 }
             }

@@ -37,20 +37,6 @@ class Schema(schemaName: String, dbName: String) {
     }
 
     @Throws(MiniDBException::class, IOException::class)
-    fun dropRelationTable(name: String) {
-        if (!relationTables.containsKey(name)) throw MiniDBException(
-            String.format(
-                "Schema %s dose not contain a table named %s!",
-                schemaName,
-                name
-            )
-        )
-        val relation: RelationTable? = relationTables[name]
-        relation!!.drop()
-        relationTables.remove(name)
-    }
-
-    @Throws(MiniDBException::class, IOException::class)
     fun dropAllTable() {
         if (!relationTables.containsKey(absFilePath)) throw MiniDBException(
             String.format(

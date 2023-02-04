@@ -20,11 +20,11 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     fun createTable(table: Table, identifier: Identifier): Database {
         val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
 
-        if(schema.views.containsKey(table.name)) {
-            throw RuntimeException("View or Table with name ${table.name} already exists.")
+        if(schema.containsKey(table.tableName)) {
+            throw RuntimeException("View or Table with name ${table.tableName} already exists.")
         }
 
-        schema[table.name] = table
+        schema[table.tableName] = table
 //        this["information_schema"]["columns"].let {
 //            run {
 //                table.columns.forEachIndexed { index, col -> run {
@@ -60,7 +60,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     }
 
     fun createSchema(schemaName: String): Schema {
-        val schema = Schema(schemaName)
+        val schema = Schema(schemaName, this.name)
         this[schemaName] = schema
         return schema
     }
@@ -77,7 +77,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
                 Column("set_config('bytea_output','hex',false)", DataType.DataTypeName.CHAR), Column("name", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("1", "bytea_output")
-            )
+            ), this.name, "pg_settings"
         )
 
         pgCatalogSchema["pg_inherits"] = InheritsView(this)
@@ -87,23 +87,33 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         pgCatalogSchema["pg_opclass"] = OpclassView(this)
         pgCatalogSchema["pg_rewrite"] = RewriteView(this)
 
-        // TODO other task
-        pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_roles"] = Table("pg_roles", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_attrdef"] = Table("pg_attrdef", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_attribute"] = Table("pg_attribute", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_am"] = Table("pg_am", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_operator"] = Table("pg_operator", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_depend"] = Table("pg_depend", mutableListOf(), mutableListOf())
-        pgCatalogSchema["pg_matviews"] = Table("pg_matviews", mutableListOf(), mutableListOf())
+
+        pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_roles"] = Table("pg_roles",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_attrdef"] = Table("pg_attrdef",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_attribute"] = Table("pg_attribute",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_am"] = Table("pg_am",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_operator"] = Table("pg_operator",
+            mutableListOf(), mutableListOf(), this.name,  "pg_catalog")
+        pgCatalogSchema["pg_depend"] = Table("pg_depend",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+        pgCatalogSchema["pg_matviews"] = Table("pg_matviews",
+            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
 
 
         val informationSchema = createSchema("information_schema")
         informationSchema["routines"] = RoutinesView()
         informationSchema["parameters"] = ParametersView()
 
-        informationSchema["tables"] = Table("tables", mutableListOf(), mutableListOf())
+        informationSchema["tables"] = Table("tables",
+            mutableListOf(), mutableListOf(), this.name, "information_schema")
         informationSchema["columns"] = ColumnsView()
 
         // 以用户身份执行以下建表语句
@@ -149,10 +159,10 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     fun dropTable(identifier: Identifier) {
         val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
 
-        if(!schema.views.containsKey(identifier.idText)) {
+        if(!schema.containsKey(identifier.idText)) {
             throw RuntimeException("View or Table with name ${identifier.idText} does not exist.")
         }
-        schema.views.remove(identifier.idText)
+        schema.remove(identifier.idText)
     }
 
 }

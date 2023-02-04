@@ -40,6 +40,7 @@ object Engine {
         }
         return null
     }
+
     operator fun get(identifier: Identifier) : View {
         if (session.get() is MySQLSession) {
             val db = databases[session.get()?.database ?: error("No database selected.")]
@@ -79,5 +80,4 @@ object Engine {
         db.createSchema("public")
         return db
     }
-
 }
