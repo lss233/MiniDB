@@ -12,13 +12,16 @@ import miniDB.parser.ast.fragment.ddl.datatype.DataType
 import java.nio.file.Paths
 import kotlin.concurrent.getOrSet
 
-class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int) {
-    var schemas = HashMap<String, Schema>();
+class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int)
+    : HashMap<String, Schema>() {
+    var schemas = HashMap<String, Schema>()
 
     private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, name).toString()
 
     fun createTable(table: Table, identifier: Identifier): Database {
-        val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
+
+        val schema: Schema = if (!this.containsKey(identifier.parent.idText)) this["pg_catalog"]
+        else this[identifier.parent.idText]
 
         if(schema.containsKey(table.tableName)) {
             throw RuntimeException("View or Table with name ${table.tableName} already exists.")
@@ -48,15 +51,18 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 //        tables[tableName] = table
 //    }
 
-    operator fun get(schemaName: String): Schema {
-        return schemas[schemaName] ?: throw RuntimeException("Schema $schemaName does not exists.");
+    override operator fun get(key: String): Schema {
+        if (!this.containsKey(key)) {
+            throw RuntimeException("Schema $key does not exists.")
+        }
+        return this[key]
     }
 
     /**
      * The privatization method avoids unnecessary set calls.
      */
     private operator fun set(schemaName: String, schema: Schema) {
-        schemas[schemaName] = schema
+        this[schemaName] = schema
     }
 
     fun createSchema(schemaName: String): Schema {
@@ -157,8 +163,8 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     }
 
     fun dropTable(identifier: Identifier) {
-        val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
-
+        val schema = if (!this.containsKey(identifier.parent.idText)) this["pg_catalog"]
+        else this[identifier.parent.idText]
         if(!schema.containsKey(identifier.idText)) {
             throw RuntimeException("View or Table with name ${identifier.idText} does not exist.")
         }

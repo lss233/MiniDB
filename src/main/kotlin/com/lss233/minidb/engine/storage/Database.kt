@@ -1,11 +1,8 @@
 package com.lss233.minidb.engine.storage
 
-import com.lss233.minidb.engine.storage.Schema
 import com.lss233.minidb.engine.config.MiniDBConfig
-import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
-import miniDB.parser.ast.expression.primary.Identifier
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
