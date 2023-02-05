@@ -14,7 +14,6 @@ import kotlin.concurrent.getOrSet
 
 class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int)
     : HashMap<String, Schema>() {
-    var schemas = HashMap<String, Schema>()
 
     private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, name).toString()
 
