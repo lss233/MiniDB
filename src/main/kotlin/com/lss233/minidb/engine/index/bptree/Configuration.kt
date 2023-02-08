@@ -27,10 +27,10 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
         for (each in types) {
             if (each != java.lang.Integer::class.java && each != java.lang.Long::class.java
                 && each != java.lang.String::class.java && each != java.lang.Float::class.java
-                && each != java.lang.Double::class.java) {
+                && each != java.lang.Double::class.java && each != java.lang.Boolean::class.java
+                && each != java.lang.Short::class.java) {
                 throw MiniDBException(String.format(MiniDBException.UnknownColumnType, each))
             }
-
         }
         this.strColLocalId = ArrayList()
         for (i in types.indices) {
@@ -76,8 +76,20 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
                     continue
                 }
                 return func.apply(ans, 0)
+            } else if (types[j] == java.lang.Short::class.java) {
+                val ans = (key1[j] as Short).compareTo((key2[j] as Short))
+                if (ans == 0) {
+                    continue
+                }
+                return func.apply(ans, 0)
             } else if (types[j] == java.lang.String::class.java) {
                 val ans = (key1[j] as String).compareTo((key2[j] as String))
+                if (ans == 0) {
+                    continue
+                }
+                return func.apply(ans, 0)
+            } else if (types[j] == java.lang.Boolean::class.java) {
+                val ans = (key1[j] as Boolean).compareTo((key2[j] as Boolean))
                 if (ans == 0) {
                     continue
                 }
@@ -129,8 +141,13 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
                 r.putFloat((key[j] as Float))
             } else if (types[j] == java.lang.Double::class.java) {
                 r.putDouble((key[j] as Double))
+            } else if (types[j] == java.lang.Short::class.java) {
+                r.putShort((key[j] as Short))
             } else if (types[j] == java.lang.String::class.java) {
                 r.put((key[j] as String).toByteArray(StandardCharsets.UTF_8))
+            } else if (types[j] == java.lang.Boolean::class.java) {
+                // TODO How to better handle the Boolean type?
+                r.put((if (key[j] as Boolean) 1 else 0).toByte())
             }
         }
     }
@@ -146,8 +163,13 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
                 r.putFloat((key[j] as Float))
             } else if (types[j] == java.lang.Double::class.java) {
                 r.putDouble((key[j] as Double))
+            } else if (types[j] == java.lang.Short::class.java) {
+                r.putShort((key[j] as Short))
             } else if (types[j] == java.lang.String::class.java) {
                 r.put((key[j] as String).toByteArray(StandardCharsets.UTF_8))
+            } else if (types[j] == java.lang.Boolean::class.java) {
+                // TODO How to better handle the Boolean type?
+                r.put((if (key[j] as Boolean) 1 else 0).toByte())
             }
         }
     }
@@ -164,11 +186,16 @@ open class Configuration(var pageSize: Int, var types: ArrayList<Type>, var size
                 key[j] = r.float
             } else if (types[j] == java.lang.Double::class.java) {
                 key[j] = r.double
+            } else if (types[j] == java.lang.Short::class.java) {
+                key[j] = r.short
             } else if (types[j] == java.lang.String::class.java) {
                 //TODO possible not efficient. buffer is copied into the string?
                 val buffer = ByteArray(sizes[j])
                 r[buffer, 0, sizes[j]]
                 key[j] = String(buffer, StandardCharsets.UTF_8)
+            } else if (types[j] == java.lang.Boolean::class.java) {
+                // TODO How to better handle the Boolean type?
+                throw RuntimeException("!!!!!!!!!!!!!!!!!!!")
             }
         }
         return key

@@ -9,65 +9,78 @@ import com.lss233.minidb.engine.memory.internal.information.RoutinesView
 import com.lss233.minidb.engine.schema.Column
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.fragment.ddl.datatype.DataType
+import java.io.File
 import java.nio.file.Paths
 import kotlin.concurrent.getOrSet
 
 class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int)
     : HashMap<String, Schema>() {
 
+    private var schemas = HashMap<String, Schema>()
+
     private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, name).toString()
 
-    fun createTable(table: Table, identifier: Identifier): Database {
-
-        val schema: Schema = if (!this.containsKey(identifier.parent.idText)) this["pg_catalog"]
-        else this[identifier.parent.idText]
-
-        if(schema.containsKey(table.tableName)) {
-            throw RuntimeException("View or Table with name ${table.tableName} already exists.")
-        }
-
-        schema[table.tableName] = table
-//        this["information_schema"]["columns"].let {
-//            run {
-//                table.columns.forEachIndexed { index, col -> run {
-//                    it.insert(arrayOf(
-//                        "minidb",
-//                        identifier.parent.idText,
-//                        identifier.idText,
-//                        col.identifier.idText,
-//                        index,
-//                        "minidb",
-//                        identifier.parent.idText,
-//                        col.definition.dataType.typeName.name
-//                    ))
-//                } }
-//
-//            }
-//        }
-        return this
-    }
-//    operator fun set(tableName: String, table: Table) {
-//        tables[tableName] = table
-//    }
-
-    override operator fun get(key: String): Schema {
-        if (!this.containsKey(key)) {
-            throw RuntimeException("Schema $key does not exists.")
-        }
-        return this[key]
+    init {
+        createDatabase()
     }
 
-    /**
-     * The privatization method avoids unnecessary set calls.
-     */
-    private operator fun set(schemaName: String, schema: Schema) {
-        this[schemaName] = schema
+    private fun createDatabase() {
+        if (!File(absFilePath).exists()) {
+            if (File(absFilePath).mkdirs()) {
+                println(
+                    String.format(
+                        "Successfully created database %s.",
+                        name
+                    )
+                )
+            } else {
+                throw RuntimeException(
+                    String.format(
+                        "Failed to create the database %s. Cannot create directory.",
+                        this.name
+                    )
+                )
+            }
+        }
     }
 
     fun createSchema(schemaName: String): Schema {
         val schema = Schema(schemaName, this.name)
         this[schemaName] = schema
         return schema
+    }
+
+    fun createTable(table: Table, identifier: Identifier): Database {
+        val schema = schemas[identifier.parent.idText] ?: this["pg_catalog"]
+        if(this.containsKey(table.tableName)) {
+            throw RuntimeException("View or Table with name ${table.tableName} already exists.")
+        }
+        schema[table.tableName] = table
+        return this
+    }
+
+    override operator fun get(key: String): Schema {
+        return schemas[key] ?: throw RuntimeException("Schema $key does not exists.");
+    }
+
+    override fun containsKey(key: String): Boolean {
+        return schemas.containsKey(key)
+    }
+
+    /**
+     * The privatization method avoids unnecessary set calls.
+     */
+    private operator fun set(schemaName: String, schema: Schema) {
+        if (this.containsKey(schemaName)) {
+            throw RuntimeException(
+                String.format(
+                    "Database %s already has a schema named %s.",
+                    this.name,
+                    schemaName
+                )
+            )
+        }
+        schemas[schemaName] = schema
     }
 
     fun initSchema() {
@@ -87,7 +100,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 
         pgCatalogSchema["pg_inherits"] = InheritsView(this)
         pgCatalogSchema["pg_class"]  = ClassView(this)
-        pgCatalogSchema["pg_attribute"]  = AttributeView(this)
+        pgCatalogSchema["pg_attribute_test"] = AttributeView(this)
         pgCatalogSchema["pg_index"] = IndexView(this)
         pgCatalogSchema["pg_opclass"] = OpclassView(this)
         pgCatalogSchema["pg_rewrite"] = RewriteView(this)

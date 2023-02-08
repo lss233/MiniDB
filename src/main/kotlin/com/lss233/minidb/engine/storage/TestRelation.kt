@@ -8,7 +8,7 @@ import java.nio.ByteOrder
 
 fun main() {
     val testRelation = TestRelation()
-    testRelation.testCreateRelation()
+    testRelation.mkdirTest()
 }
 class TestRelation {
 
@@ -54,5 +54,12 @@ class TestRelation {
         println(bbuffer.long)
         // ;
         println(bbuffer.position())
+    }
+
+    fun mkdirTest() {
+        println(File("E:\\MiniDB-Data\\Data\\minidb\\a").mkdirs())
+        val a : Boolean = true
+        val c = if (a) 1 else 0
+        println(c)
     }
 }

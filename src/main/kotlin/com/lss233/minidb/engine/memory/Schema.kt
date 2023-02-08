@@ -14,15 +14,58 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Schema(private val schemaName: String, private var belongDatabase: String): ConcurrentHashMap<String, View>() {
 
+    private var tables = ConcurrentHashMap<String, View>()
+
     // The absolute location of the file on the system disk.
     private var absFilePath:String = Paths.get(MiniDBConfig.DATA_FILE, belongDatabase, schemaName).toString()
 
+    init {
+        createSchema()
+    }
+
+    fun createTable(table: Table):Schema {
+        // TODO 这里需要创建关系表文件
+        this[table.tableName] = table
+        return this
+    }
+
+    private fun createSchema() {
+        if (!File(absFilePath).exists()) {
+            if (File(absFilePath).mkdirs()) {
+                println(
+                    String.format(
+                        "Successfully created schema %s belonging to database %s.",
+                        schemaName,
+                        belongDatabase
+                    )
+                )
+            } else {
+                throw RuntimeException(
+                    String.format(
+                        "Failed to create the schema %s. Cannot create directory.",
+                        this.schemaName
+                    )
+                )
+            }
+        }
+    }
+
+    override operator fun get(key: String) : View
+            = tables[key] ?: throw RuntimeException("View $key does not exist.")
+
     operator fun set(name: String, view: View) {
-        this[name] = view
+        if (this.containsKey(name)) throw MiniDBException(
+            String.format(
+                "Schema %s already has a view named %s",
+                schemaName,
+                name
+            )
+        )
+        tables[name] = view
     }
 
     operator fun set(name: String, table: Table) {
-        if (this.containsKey(name)) throw MiniDBException(
+        if (this.containsKey(name)) throw RuntimeException(
             String.format(
                 "Schema %s already contains a table named %s!",
                 schemaName,
@@ -30,7 +73,7 @@ class Schema(private val schemaName: String, private var belongDatabase: String)
             )
         )
         val path = Paths.get(absFilePath, name).toString()
-        if (!File(path).mkdir()) throw MiniDBException(
+        if (!File(path).mkdirs()) throw RuntimeException(
             String.format(
                 "Failed to create the table %s. Cannot create directory.",
                 name
@@ -40,21 +83,17 @@ class Schema(private val schemaName: String, private var belongDatabase: String)
         try {
             table.create()
         } catch (e: Exception) {
-            Misc.rmDir(path)
             throw e
         }
-        this[name] = table
+        tables[name] = table
     }
 
-    override operator fun get(key: String) : View {
-        if (!this.containsKey(key)) {
-            throw RuntimeException("View $key does not exist.")
-        }
-        return this[key]
+    override fun containsKey(key: String): Boolean {
+        return tables.containsKey(key)
     }
 
     override fun remove(key: String): View? {
-        if (!this.containsKey(key)) throw MiniDBException(
+        if (!this.containsKey(key)) throw RuntimeException(
             String.format(
                 "Schema %s dose not contain a table named %s!",
                 schemaName,
@@ -72,7 +111,7 @@ class Schema(private val schemaName: String, private var belongDatabase: String)
      */
     fun resume() {
         val file = File(absFilePath)
-        if (!file.exists()) throw MiniDBException(String.format("Schema %s disappears!", schemaName))
+        if (!file.exists()) throw RuntimeException(String.format("Schema %s disappears!", schemaName))
         val directories = file.listFiles { obj: File -> obj.isDirectory } ?: return
         for (each in directories) {
             val table = Table(each.name, belongDatabase, this.schemaName)

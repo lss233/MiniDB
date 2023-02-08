@@ -31,8 +31,6 @@ open class Relation(val columns: MutableList<Column>, val rows: MutableList<Arra
 
     fun clone() = Relation(mutableListOf<Column>().also { it.addAll(columns) }, mutableListOf<Array<Any>>().also { it.addAll(rows) })
 
-
-
     private fun projection(projectColumn: MutableList<Column>): Relation {
         val projectColumnIndexes = projectColumn.map { this.columns.indexOf(it) }.toMutableList()
         val projectRow = this.rows.map { oldRow -> run {

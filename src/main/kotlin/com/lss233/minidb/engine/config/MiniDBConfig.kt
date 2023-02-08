@@ -10,7 +10,7 @@ class MiniDBConfig {
         /**
          * 系统文件的目录
          */
-        const val DB_ROOT_PATH :String = "E:\\MiniDB_Data\\"
+        const val DB_ROOT_PATH :String = "E:\\MiniDB-Data\\"
 
         /**
          * 系统表位置

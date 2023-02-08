@@ -23,7 +23,11 @@ class CreateTableStatementVisitor: Visitor() {
                 val columIdentifier = stack.pop() as Identifier
                 Column(columIdentifier, it.value)
         } }.toMutableList()
-        relation = Table(tableIdentifier!!.idText, columns, mutableListOf())
+        val currentDatabase = if(tableIdentifier!!.parent.parent!=null)
+            tableIdentifier!!.parent.parent.idText
+        else "minidb"
+        relation = Table(tableIdentifier!!.idText, columns, mutableListOf(),
+            currentDatabase, tableIdentifier!!.parent.idText)
 
         stack.push(relation)
     }

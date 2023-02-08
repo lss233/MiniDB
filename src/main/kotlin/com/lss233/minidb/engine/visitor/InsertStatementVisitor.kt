@@ -20,6 +20,8 @@ class InsertStatementVisitor: Visitor() {
     var affects = 0
 
     override fun visit(node: DMLInsertStatement) {
+
+        // TODO Load the parsed relational table from disk.
         val table = Engine[node.table];
         val columns = node.columnNameList?.map { identifier -> Column(identifier) } ?: table.getRelation().columns
         node.rowList.forEach { row -> run {
@@ -31,8 +33,8 @@ class InsertStatementVisitor: Visitor() {
                 } }.toTypedArray()
             ))
         } }
-
     }
+
     override fun visit(node: DMLReplaceStatement) {
         val table = Engine[node.table];
         val columns = node.columnNameList.map { identifier -> Column(identifier) }
