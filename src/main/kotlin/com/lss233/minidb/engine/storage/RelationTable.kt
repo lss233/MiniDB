@@ -4,6 +4,7 @@ import com.lss233.minidb.engine.index.bptree.BPlusConfiguration
 import com.lss233.minidb.engine.index.bptree.BPlusTree
 import com.lss233.minidb.engine.index.bptree.MainDataConfiguration
 import com.lss233.minidb.engine.index.bptree.MainDataFile
+import com.lss233.minidb.engine.memory.Table
 import com.lss233.minidb.exception.MiniDBException
 import com.lss233.minidb.utils.Misc
 import java.io.File
@@ -97,7 +98,7 @@ class RelationTable {
             colIDs.add(i)
         }
         data = MainDataFile(
-            MainDataConfiguration(meta!!.coltypes!!, meta!!.colsizes!!, colIDs),
+            MainDataConfiguration(meta!!.coltypes, meta!!.colsizes, colIDs),
             mode,
             Paths.get(directory!!, "data").toString(),
             BPlusTree(
@@ -115,9 +116,9 @@ class RelationTable {
             )
         )
 
-        superKeyTrees = ArrayList(meta!!.superKeys!!.size)
-        indexTrees = ArrayList(meta!!.indices!!.size)
-        nullTrees = ArrayList(meta!!.nullableColIds!!.size)
+        superKeyTrees = ArrayList(meta!!.superKeys.size)
+        indexTrees = ArrayList(meta!!.indices.size)
+        nullTrees = ArrayList(meta!!.nullableColIds.size)
 
         // resume null tree
         for (i in nullTrees!!.indices) {
@@ -132,23 +133,23 @@ class RelationTable {
                     1000
                 ),
                 mode,
-                Paths.get(directory!!, String.format("null.%d.data", meta!!.nullableColIds!![i])).toString()
+                Paths.get(directory!!, String.format("null.%d.data", meta!!.nullableColIds[i])).toString()
             )
             nullTrees!![i] = tmp
         }
 
         // resume indices trees
         for (i in indexTrees!!.indices) {
-            val colId = meta!!.indices!![i]
+            val colId = meta!!.indices[i]
             val tmp = BPlusTree(
                 BPlusConfiguration(
                     1024,
                     8,
                     colId.stream().map<Any> { x: Int? ->
-                        meta!!.coltypes!![x!!]
+                        meta!!.coltypes[x!!]
                     }.collect(Collectors.toCollection { ArrayList() }),
                     colId.stream().map<Any> { x: Int? ->
-                        meta!!.colsizes!![x!!]
+                        meta!!.colsizes[x!!]
                     }.collect(Collectors.toCollection { ArrayList() }),
                     colId,
                     false,
@@ -162,16 +163,16 @@ class RelationTable {
 
         // resume super key trees
         for (i in superKeyTrees!!.indices) {
-            val colId = meta!!.superKeys!![i]
+            val colId = meta!!.superKeys[i]
             val tmp = BPlusTree(
                 BPlusConfiguration(
                     1024,
                     8,
                     colId.stream().map<Any> { x: Int? ->
-                        meta!!.coltypes!![x!!]
+                        meta!!.coltypes[x!!]
                     }.collect(Collectors.toCollection { ArrayList() }),
                     colId.stream().map<Any> { x: Int? ->
-                        meta!!.colsizes!![x!!]
+                        meta!!.colsizes[x!!]
                     }.collect(Collectors.toCollection { ArrayList() }),
                     colId,
                     true,
@@ -196,31 +197,31 @@ class RelationTable {
         )
         val indeedNullCols = ArrayList<Int>()
         for (i in 0 until meta!!.ncols) {
-            if (!meta!!.nullableColIds!!.contains(i) && row[i] == null) {
+            if (!meta!!.nullableColIds.contains(i) && row[i] == null) {
                 // check nullable
-                throw MiniDBException(String.format("column (%s) cannot be null!", meta!!.colnames!![i]))
+                throw MiniDBException(String.format("column (%s) cannot be null!", meta!!.colnames[i]))
             }
             if (row[i] != null) {
                 // check type
-                if (meta!!.coltypes!![i] != row[i]!!.javaClass) {
+                if (meta!!.coltypes[i] != row[i]!!.javaClass) {
                     throw MiniDBException(
                         String.format(
                             "Non-compatible type. Given: %s, Required: %s!",
                             row[i]!!.javaClass.typeName,
-                            meta!!.coltypes!![i].typeName
+                            meta!!.coltypes[i].typeName
                         )
                     )
                 }
 
                 // check string length
-                if (meta!!.coltypes!![i] == java.lang.String::class.java) {
+                if (meta!!.coltypes[i] == java.lang.String::class.java) {
                     val length = (row[i] as String?)!!.toByteArray(StandardCharsets.UTF_8).size
-                    if (length > meta!!.colsizes!![i]) {
+                    if (length > meta!!.colsizes[i]) {
                         throw MiniDBException(
                             java.lang.String.format(
                                 "column (%s) length exceeds! The value is (%s) with a length of %d (in bytes), but the limit is %d.",
-                                meta!!.colnames!![i],
-                                row[i], length, meta!!.colsizes!![i]
+                                meta!!.colnames[i],
+                                row[i], length, meta!!.colsizes[i]
                             )
                         )
                     }
@@ -228,15 +229,15 @@ class RelationTable {
             } else {
                 // null columns, set the default value of the corresponding type.
                 indeedNullCols.add(i)
-                if (meta!!.coltypes!![i] == java.lang.String::class.java) {
+                if (meta!!.coltypes[i] == java.lang.String::class.java) {
                     row[i] = ""
-                } else if (meta!!.coltypes!![i] == java.lang.Integer::class.java) {
+                } else if (meta!!.coltypes[i] == java.lang.Integer::class.java) {
                     row[i] = 0
-                } else if (meta!!.coltypes!![i] == java.lang.Long::class.java) {
+                } else if (meta!!.coltypes[i] == java.lang.Long::class.java) {
                     row[i] = 0L
-                } else if (meta!!.coltypes!![i] == java.lang.Double::class.java) {
+                } else if (meta!!.coltypes[i] == java.lang.Double::class.java) {
                     row[i] = 0.0
-                } else if (meta!!.coltypes!![i] == java.lang.Float::class.java) {
+                } else if (meta!!.coltypes[i] == java.lang.Float::class.java) {
                     row[i] = 0f
                 }
             }
@@ -352,7 +353,7 @@ class RelationTable {
     }
 
     private class Helper(
-        var tables: ArrayList<RelationTable>,
+        var tables: ArrayList<Table>,
         var func: Consumer<ArrayList<MainDataFile.SearchResult>>
     ) {
         var placeHolder: ArrayList<MainDataFile.SearchResult> = ArrayList()
@@ -378,7 +379,7 @@ class RelationTable {
     }
 
     fun traverseRelations(
-        tables: ArrayList<RelationTable>,
+        tables: ArrayList<Table>,
         func: Consumer<ArrayList<MainDataFile.SearchResult>>
     ) {
         Helper(tables, func).run()

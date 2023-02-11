@@ -1,12 +1,14 @@
 package com.lss233.minidb.engine.memory
 
 import com.lss233.minidb.engine.SQLParser
+import com.lss233.minidb.engine.config.MiniDBConfig
 import com.lss233.minidb.engine.visitor.CreateTableStatementVisitor
 import com.lss233.minidb.networking.Session
 import com.lss233.minidb.networking.protocol.mysql.MySQLSession
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter
 import miniDB.parser.ast.expression.primary.Identifier
 import miniDB.parser.ast.stmt.ddl.DDLCreateTableStatement
+import java.io.File
 import java.util.*
 
 object Engine {
@@ -79,5 +81,16 @@ object Engine {
         // Create db schema
         db.createSchema("public")
         return db
+    }
+
+    fun resumeDatabase() {
+        val file = File(MiniDBConfig.DATA_FILE)
+        if (!file.exists()) throw RuntimeException(String.format("MiniDB Storage File Path Wrong!"))
+        val databases = file.listFiles { obj: File -> obj.isDirectory } ?: return
+        for (each in databases) {
+            val database = Database(each.name, dba = 10, encoding = 1, locProvider = 'c', allowConn = true, connLimit = -1)
+            database.resumeSchemas()
+            this.databases[each.name] = database
+        }
     }
 }

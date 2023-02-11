@@ -64,6 +64,9 @@ class Schema(private val schemaName: String, private var belongDatabase: String)
         tables[name] = view
     }
 
+    /**
+     * When the set method is executed, the data operated on is written to disk.
+     */
     operator fun set(name: String, table: Table) {
         if (this.containsKey(name)) throw RuntimeException(
             String.format(
@@ -109,13 +112,12 @@ class Schema(private val schemaName: String, private var belongDatabase: String)
      * Refresh the schema on disk.
      * Pre-read table information entries.
      */
-    fun resume() {
+    fun resumeTables() {
         val file = File(absFilePath)
         if (!file.exists()) throw RuntimeException(String.format("Schema %s disappears!", schemaName))
-        val directories = file.listFiles { obj: File -> obj.isDirectory } ?: return
-        for (each in directories) {
+        val tables = file.listFiles { obj: File -> obj.isDirectory } ?: return
+        for (each in tables) {
             val table = Table(each.name, belongDatabase, this.schemaName)
-            table.absTableDirectory = each.absolutePath
             table.resume()
             this[each.name] = table
         }

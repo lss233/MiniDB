@@ -12,7 +12,8 @@ class NettyServer {
     private lateinit var bossGroup: EventLoopGroup
     private lateinit var workerGroup: EventLoopGroup
 
-    var port = 3306
+    // Avoid conflicts with the local mysql service port address
+    var port = 3308
 
     fun start() {
         object : Thread() {

@@ -13,12 +13,12 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.concurrent.getOrSet
 
-class Database(val name: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int)
+class Database(val databaseName: String, val dba: Int, val encoding: Int, val locProvider: Char, val allowConn: Boolean, val connLimit: Int)
     : HashMap<String, Schema>() {
 
     private var schemas = HashMap<String, Schema>()
 
-    private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, name).toString()
+    private var absFilePath: String = Paths.get(MiniDBConfig.DATA_FILE, databaseName).toString()
 
     init {
         createDatabase()
@@ -30,14 +30,14 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
                 println(
                     String.format(
                         "Successfully created database %s.",
-                        name
+                        databaseName
                     )
                 )
             } else {
                 throw RuntimeException(
                     String.format(
                         "Failed to create the database %s. Cannot create directory.",
-                        this.name
+                        this.databaseName
                     )
                 )
             }
@@ -45,7 +45,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
     }
 
     fun createSchema(schemaName: String): Schema {
-        val schema = Schema(schemaName, this.name)
+        val schema = Schema(schemaName, this.databaseName)
         this[schemaName] = schema
         return schema
     }
@@ -75,12 +75,23 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
             throw RuntimeException(
                 String.format(
                     "Database %s already has a schema named %s.",
-                    this.name,
+                    this.databaseName,
                     schemaName
                 )
             )
         }
         schemas[schemaName] = schema
+    }
+
+    fun resumeSchemas() {
+        val file = File(MiniDBConfig.DATA_FILE)
+        if (!file.exists()) throw RuntimeException(String.format("MiniDB Storage File Path Wrong!"))
+        val databases = file.listFiles { obj: File -> obj.isDirectory } ?: return
+        for (each in databases) {
+            val schema = Schema(each.name, this.databaseName)
+            schema.resumeTables()
+            this[each.name] = schema
+        }
     }
 
     fun initSchema() {
@@ -95,7 +106,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
                 Column("set_config('bytea_output','hex',false)", DataType.DataTypeName.CHAR), Column("name", DataType.DataTypeName.CHAR)
             ), mutableListOf(
                 NTuple.from("1", "bytea_output")
-            ), this.name, "pg_settings"
+            ), this.databaseName, "pg_settings"
         )
 
         pgCatalogSchema["pg_inherits"] = InheritsView(this)
@@ -107,23 +118,23 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
 
 
         pgCatalogSchema["pg_foreign_table"] = Table("pg_foreign_table",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_foreign_server"] = Table("pg_foreign_server",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_roles"] = Table("pg_roles",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_attrdef"] = Table("pg_attrdef",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_attribute"] = Table("pg_attribute",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_am"] = Table("pg_am",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_operator"] = Table("pg_operator",
-            mutableListOf(), mutableListOf(), this.name,  "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName,  "pg_catalog")
         pgCatalogSchema["pg_depend"] = Table("pg_depend",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
         pgCatalogSchema["pg_matviews"] = Table("pg_matviews",
-            mutableListOf(), mutableListOf(), this.name, "pg_catalog")
+            mutableListOf(), mutableListOf(), this.databaseName, "pg_catalog")
 
 
         val informationSchema = createSchema("information_schema")
@@ -131,7 +142,7 @@ class Database(val name: String, val dba: Int, val encoding: Int, val locProvide
         informationSchema["parameters"] = ParametersView()
 
         informationSchema["tables"] = Table("tables",
-            mutableListOf(), mutableListOf(), this.name, "information_schema")
+            mutableListOf(), mutableListOf(), this.databaseName, "information_schema")
         informationSchema["columns"] = ColumnsView()
 
         // 以用户身份执行以下建表语句

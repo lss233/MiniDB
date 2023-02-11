@@ -15,10 +15,9 @@ repositories {
 }
 
 dependencies {
-    implementation("io.netty:netty-all:4.1.84.Final")
+    implementation("io.netty:netty-all:4.1.86.Final")
     implementation("hu.webarticum:tree-printer:2.1.0")
-    implementation("cn.hutool:hutool-all:5.8.9")
-    implementation("com.google.code.gson:gson:2.10")
+    implementation("cn.hutool:hutool-all:5.8.11")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
     testImplementation(kotlin("test"))
 }

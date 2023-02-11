@@ -1,14 +1,17 @@
 package com.lss233.minidb.engine.storage
 
+import com.lss233.minidb.engine.config.MiniDBConfig
 import com.lss233.minidb.exception.MiniDBException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.file.Paths
+import kotlin.io.path.Path
 
 fun main() {
     val testRelation = TestRelation()
-    testRelation.mkdirTest()
+    testRelation.resumeDatabaseTest()
 }
 class TestRelation {
 
@@ -22,9 +25,9 @@ class TestRelation {
         meta.colsizes = ArrayList(mutableListOf(4, 8, 5))
         meta.nullableColIds = ArrayList(mutableListOf(2))
         meta.superKeys = ArrayList()
-        meta.superKeys!!.add(ArrayList(mutableListOf(0)))
+        meta.superKeys.add(ArrayList(mutableListOf(0)))
         meta.indices = ArrayList()
-        meta.indices!!.add(ArrayList(mutableListOf(1)))
+        meta.indices.add(ArrayList(mutableListOf(1)))
         val relation = RelationTable()
         relation.directory = "data/db/MyTable"
         File(relation.directory!!).mkdirs()
@@ -54,6 +57,36 @@ class TestRelation {
         println(bbuffer.long)
         // ;
         println(bbuffer.position())
+    }
+
+
+    fun resumeDatabaseTest() {
+        val file = File(MiniDBConfig.DATA_FILE)
+        if (!file.exists()) throw RuntimeException(String.format("MiniDB Storage File Path Wrong!"))
+        val databases = file.listFiles { obj: File -> obj.isDirectory } ?: return
+        for (each in databases) {
+            println(each.absolutePath)
+            resumeSchemaTest(each.name)
+        }
+    }
+
+    private fun resumeSchemaTest(databaseName:String) {
+        val schemaFile = File(Path(MiniDBConfig.DATA_FILE, databaseName).toString())
+        if (!schemaFile.exists()) throw RuntimeException("Database $databaseName not exist!")
+        val schemas = schemaFile.listFiles { obg: File -> obg.isDirectory } ?: return
+        for (each in schemas) {
+            println("\t ${each.name}")
+            resumeTableTest(databaseName, each.name)
+        }
+    }
+
+    private fun resumeTableTest(databaseName: String, schemaName: String) {
+        val tableFile = File(Paths.get(MiniDBConfig.DATA_FILE, databaseName, schemaName).toString())
+        if (!tableFile.exists()) throw RuntimeException("Wrong!!!")
+        val tables = tableFile.listFiles { obj: File -> obj.isDirectory } ?: return
+        for (table in tables) {
+            println("\t\tTable ${table.name} was resume!")
+        }
     }
 
     fun mkdirTest() {
